@@ -1,0 +1,139 @@
+<html> 
+  {% include head.html %}
+
+  <body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
+    {% include nav.html %}
+    {% include header.html %}
+    <!--a href="../../" style="font-size:smaller;">Home</a-->
+    <section id="links" class="container">
+      <h2 id="collection">CGA Rules</h2><hr class="title">
+    {% assign rules = site.rules | where:"category", "rule"  %}
+    {% assign categories = site.category_order %}
+
+    
+
+    {% for category in site.category_order %}
+      <br/><a data-toggle="collapse" data-target="#{{ category }}Section"><img class="chevron" src="img/expand_collapse.svg"/><h3 id = "{{ category }}">{{ category }}</h3></a><br/>
+      <div class="collapsed collapse in" id="{{ category }}Section">
+      {% assign rules = site.rules | where:"category", "rule" | where:"Type", category %}
+      {% for rule in rules %}
+            <!--p style="clear:both;"-->
+            
+              <div class="row content">
+                
+                <div class="col-3"><img src="RuleRepository/images/{{ rule.Name }}.png" style="margin:0 .5em .25em 0; float: left;" class="rulePreview"></div>
+                <div class="col-sm-8">
+                
+                  <h4 class = "ruleName">{{ rule.Alias }} </h4><i class="attribution"> {{ rule.Attribution }}</i>
+           
+               
+                  <span class="ruleDescription">{{ rule.Description }}</span>
+                 
+              
+                </div>
+                <div class="col-3"  style="padding-left:19px; float:left">
+                      <div class="row" style="height: 30px;">
+                      {% if rule.RPK != "Y" %}
+                      <a href="{{ rule.RPK }}" target="_blank"><img class="icon" src="img/download.svg"/><span class="linkText">Download</span></a>
+                      {% else %}
+                      <img class="icon fade" src="img/download.svg"/><span class="linkText inactive">Download</span>
+                      {% endif %}
+                      </div>
+      
+                      <div class="row" style="height: 30px;">
+                      {% if rule.Code != "N" %}
+                      <a href="rules/{{ rule.Name }}/index.html" target="_blank"><img class="icon" src="img/code.svg"/><span class="linkText">View Code</span></a>
+                      {% else %}
+                      <img class="icon fade" src="img/code.svg"/><span class="linkText inactive">View Code</span>
+                      {% endif %}
+                    </div>
+                    <div class="row" style="height: 30px;">
+                      <a href="{{ rule.Name}}" class="demoLink" target="_blank"><img class="icon" src="img/demo.svg"/><span class="linkText">Demo</span></a>
+                    </div>
+                      <div class="row" style="height: 30px;">
+                      {% if rule.Video != "N" %}
+                      <a href="{{ rule.Video }}" target="_blank"><img class="icon" src="img/video.svg"/><span class="linkText">Video</span></a>
+                      {% else %}
+                      <img class="icon fade" src="img/video.svg"/><span class="linkText inactive">Video</span>
+                      {% endif %}
+                      </div>
+
+                  </ul>
+                </div>
+               
+              </div>
+              <hr>
+          
+              
+      {% endfor %} 
+      </div>
+    {% endfor %}
+    
+    <h2 id="tutorials">Tutorials</h2><hr class="title">
+	<div class="link_list">
+		<h3 class="subResource">CityEngine</h3>
+		<span><a target="_blank" href="http://desktop.arcgis.com/en/cityengine/latest/tutorials/introduction-to-the-cityengine-tutorials.htm">CityEngine Tutorials</a></span>
+		<span><a target="_blank" href="https://www.esri.com/arcgis-blog/products/city-engine/3d-gis/how-to-exchange-data-between-esri-cityengine-and-autodesk-infraworks/">Exchanging Data Between Infraworks and CityEngine</a></span>
+		<span><a target="_blank" href="https://hed.esri.ca/resourcefinder/#/title=Urban%20Modelling%20with%20CityEngine/lang=en">Urban Modelling with CityEngine Esri Canada 2018</a></span>
+		<span><a target="_blank" href="https://hed.esri.ca/resourcefinder/#/title=BIM%20to%20CityEngine%20Workflows/lang=en">BIM to CityEngine Workflows</a></span>
+		<span><a target="_blank" href="https://hed.esri.ca/resourcefinder/#/title=GIS%20to%20CityEngine%20Workflows/lang=en">GIS to CityEngine Workflows</a></span>
+		<span><a target="_blank" href="https://hed.esri.ca/resourcefinder/#/title=Introduction%20to%20GeoDesign%20%E2%80%93%20Getting%20to%20Know%20CityEngine/lang=en">Introduction to Geodesign - Getting to Know CityEngine</a></span>
+		<span><a target="_blank" href="https://hed.esri.ca/resourcefinder/#/title=Complete%20Streets%20in%20CityEngine/lang=en">Complete Streets in CityEngine</a></span>
+		<span><a target="_blank" href="https://community.esri.com/docs/DOC-11545-cityengine-metadata-to-unreal-engine">CityEngine Exporter for Unreal Engine Quick Start Guide</a></span>
+		<span><a target="_blank" href="https://community.esri.com/docs/DOC-11563-cityengine-vr-tabletop-experience-for-unreal-engine-2">CityEngine VR Experience for Unreal Studio</a></span>
+		<span><a target="_blank" href="https://youtu.be/Plncupf4FA8">3D Planning with SketchUp and CityEngine</a></span>
+		<h3 class="subResource">ArcGIS Pro</h3>
+		<span><a target="_blank" href="https://www.esri.com/arcgis-blog/products/arcgis-pro/3d-gis/coordinates-in-revit-for-use-in-arcgis/">Revit to ArcGIS Pro</a></span>
+		<span><a target="_blank" href="https://hed.esri.ca/resourcefinder/#/title=CAD%20to%20GIS%20Workflows/lang=en">CAD to GIS Workflows</a></span>
+		<span><a target="_blank" href="https://hed.esri.ca/resourcefinder/#/title=GIS%20Flood%20Analysis/lang=en">GIS Flood Analysis</a></span>
+		<span><a target="_blank" href="https://hed.esri.ca/resourcefinder/#/title=GIS%20Wind%20Analysis/lang=en">GIS Wind Analysis</a></span>
+		<span><a target="_blank" href="https://www.youtube.com/watch?v=5jULrF-SVfs">Creating Web Scenes with ArcGIS Pro</a></span>
+		<h3 class="subResource">Other Software</h3>
+		<span><a target="_blank" href="https://hed.esri.ca/resourcefinder/#/title=GIS%20with%20Unity%20and%20Unreal%20Engine/lang=en">GIS with Unity and Unreal Engine</a></span>
+		
+		
+		<h2 id="videos">Videos</h2><hr class="title">
+		<h3 class="subResource">CityEngine</h3>
+		<span><a target="_blank" href="https://www.youtube.com/playlist?list=PLWGP11THb9EqP76HhWw8dFvl45-7TYE5n">Esri's CityEngine Rule of the Week</a></span>
+		<span><a target="_blank" href="https://www.youtube.com/channel/UCq_4ineLg8X0_w6uqWcWxhQ">CityEngine TV</a></span>
+		<span><a target="_blank" href="https://www.esri.com/videos/watch?videoid=t96JGUzQ2xQ">Master Planning & Architectural Site Design with CityEngine</a></span>
+		<span><a target="_blank" href="https://www.esri.com/videos/watch?videoid=vqmzs67lopg">Urban Design with CityEngine in ArcGIS Urban</a></span>  
+		<h3 class="subResource">GeoDesign Education</h3>
+		<span><a target="_blank" href="https://www.esri.com/videos/watch?videoid=E0dUTAIeddY">The What and Why of Geodesign</a></span>
+		<span><a target="_blank" href="https://www.esri.com/videos/watch?videoid=ymdkKxwIWZA">Geodesign in Professional Practice: Methods & Directions</a></span>
+
+		<h2 id="resources">Resources</h2><hr class="title">
+		<h3 class="subResource">3D Models</h3>
+		<span><a target="_blank" href="https://www.onecommunityglobal.org/sketchup-plants/"></a></span>
+		<span><a target="_blank" href="https://www.landscapeforms.com/en-us/site-furniture/pages/all-benches.aspx">3D Trees, Shrubs and Plants</a></span>
+		<span><a target="_blank" href="https://www.landscapeforms.com/en-us/site-furniture/pages/all-tables.aspx">Outdoor Tables</a></span>
+		<span><a target="_blank" href="https://www.landscapeforms.com/en-us/site-furniture/pages/all-litter-ash-recycling.aspx">Litter Boxes</a></span>
+		<span><a target="_blank" href="https://www.landscapeforms.com/en-us/site-furniture/pages/all-planters.aspx">Planter Boxes</a></span>
+		<span><a target="_blank" href="https://www.landscapeforms.com/en-us/site-furniture/pages/all-transit-stops.aspx">Shelters</a></span>
+		<span><a target="_blank" href="https://www.landscapeforms.com/en-us/site-furniture/pages/all-bike-racks.aspx">Bike Racks</a></span>
+		<span><a target="_blank" href="https://www.knoll.com/Typicals/search?change=true&page=1&size=25">Office Furniture</a></span>
+		<span><a target="_blank" href="https://www.turbosquid.com/Search/Index.cfm?max_price=0&min_price=0&cname=free">Free 3D Objects</a></span>
+    <h3 class="subResource">Esri GeoDesign Summit Proceedings</h3>
+    <span><a target="_blank" href="https://proceedings.esri.com/library/userconf/geodesign20/index.html">2020 Conference</a></span>
+		<span><a target="_blank" href="http://proceedings.esri.com/library/userconf/geodesign19/index.html">2019 Conference</a></span>
+		<span><a target="_blank" href="http://proceedings.esri.com/library/userconf/geodesign18/index.html">2018 Conference</a></span>
+		<span><a target="_blank" href="http://proceedings.esri.com/library/userconf/geodesign17/index.html">2017 Conference</a></span>
+  </div>
+  <h2 id="submit">Submit Rule</h2><hr class="title">
+  <p>Do you have a useful or fun rule to add to the site? To submit a rule, export the rule package from CityEngine, share it on ArcGIS Online, and provide the rule details in the form below. </p>
+  <style>.embed-container {position: relative; height: 1550px; padding-bottom:80%; max-width: 100%;} .embed-container iframe, .embed-container object, .embed-container iframe{position: absolute; top: 0; left: 0; width: 100%; height: 1550px;} small{position: absolute; z-index: 40; bottom: 0; margin-bottom: -15px;}</style><div class="embed-container"><iframe name="survey123webform" width="500" height="400" frameborder="0" marginheight="0" marginwidth="0" title="GeoDesign Rule Submission" src="//survey123.arcgis.com/share/b070027757cd4ebfa7f0fd2df386b44c?hide=navbar,header,footer,theme,description" allow="geolocation https://survey123.arcgis.com; camera https://survey123.arcgis.com"></iframe></div><script>var survey123webform = document.getElementsByName('survey123webform')[0];window.addEventListener("message",e=>{if(e.data){var t=JSON.parse(e.data);"survey123:onFormLoaded"===t.event&&t.contentHeight&&(survey123webform.parentNode.style.height=t.contentHeight+"px")&&(survey123webform.parentNode.style["padding-bottom"]="unset")}});</script>  </section>
+
+    {% include footer.html %}
+  <script src="js/main.js"></script>
+  <script type="text/javascript">
+   $(document).ready(function(){
+    $('.demoLink').each(function(){ 
+      var ruleName = $(this).attr('href');
+      var href = window.location.origin + window.location.pathname;
+      var url = "https://www.arcgis.com/apps/CEWebViewer/viewer.html?3dWebScene=" + href + "RuleRepository/models/" + ruleName + ".3ws"
+      $(this).attr('href', url);
+    }); 
+  });
+  </script>
+  </body>
+</html>

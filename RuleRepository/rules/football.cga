@@ -1,0 +1,35 @@
+/**
+ * File:    court.cga
+ * Created: 3 Apr 2017 14:27:58 GMT
+ * Author:  Esri Canada */
+
+version "2016.1"
+
+
+
+
+attr fieldLength = 100
+
+
+@StartRule
+Shape-->
+   innerRectangle(edge) {shape : Field}
+	
+Field -->
+	alignScopeToGeometry(yUp, 0, longest)
+    Upright
+    rotateScope(0,180,0)
+    Upright
+
+Upright -->
+   t(-1 * fieldLength/2,0,0)
+   i("assets/Football/upright.obj", yUp, keepSizeAlignPosition)
+   
+   
+style CFL
+
+attr fieldLength = 105.6
+
+style NFL
+
+attr fieldLength = 95.6

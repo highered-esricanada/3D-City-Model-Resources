@@ -1,0 +1,180 @@
+/**
+ * File:    Camera.cga
+ * Created: 13 Nov 2013 16:08:46 GMT
+ * Author:  chri7180
+ */
+ 
+version "2016.1"
+
+
+
+#####################
+# CAMERA CONTROL
+
+@Group("CAMERA CONTROL",1) @Order(1)
+@Range(0, 360)
+attr Pan = 0
+
+@Group("CAMERA CONTROL") @Order(2)
+@Range(-90, 90)
+attr Tilt = 0
+
+@Group("CAMERA CONTROL") @Order(3)
+@Description("Longest practical range of camera focus; past this range is too far away to be useful.")
+@Range(5,160)
+attr Zoom = 50
+
+#FIX: Make this match actual cameras - what matches 50mm, 35mm, etc.? 
+#@Group("CAMERA CONTROL") @Order(4)
+#@Range(1,100)
+#attr Box_Width = Focal_Range
+
+#FIX: Make this match actual cameras - what matches 50mm, 35mm, etc.? 
+@Group("CAMERA CONTROL") @Order(4)
+@Range(1,100)
+attr Horizontal_View_Angle = 50
+
+@Group("CAMERA CONTROL") @Order(5)
+@Description("First number is width; second number is height (relatively).")
+@Range("16:9","4:3","1:1")
+attr Aspect_Ratio = "16:9"
+
+############################
+# CAMERA SETUP
+
+@Group("CAMERA CONTROL") @Order(6)
+#@Group("CAMERA SETUP",2) @Order(1)
+@Range(0, 5.1)
+attr Height = 2.5
+
+#@Group("CAMERA SETUP") @Order(2)
+#@Description("Start rotation of 0 is north, and rotates clockwise. (in degrees)")
+#@Range(0,360)
+#attr Pan_Start = 0
+
+#@Group("CAMERA SETUP") @Order(3)
+#@Description("[TEMP!] Range of rotation from start point, in both directions. (degrees)")
+#@Range(90, -90)
+#attr Pan_Range = 0
+
+#@Group("CAMERA SETUP") @Order(4)
+#@Description("[TEMP!] Tilt is zero to look horizontally. Positive is tilt up.")
+#@Range(90,-90)
+#attr Tilt_Start = 0
+
+#@Group("CAMERA SETUP") @Order(5)
+#@Description("[TEMP!] Positive tilt looks up.") 
+#@Range(90,-90)
+#attr Tilt_Range = 0
+
+
+
+#########################
+# VIEWSHED DISPLAY
+
+@Group("DISPLAY OPTIONS",3) @Order(1)
+@Color
+attr Camera_Color = "#C0C0C0"
+
+
+@Group("DISPLAY OPTIONS",3) @Order(1)
+@Color
+attr Viewshed_Color = "#0000FF"
+
+@Group("DISPLAY OPTIONS") @Order(1)
+@Range(0,1)
+attr Transparency = 0.5
+
+
+@StartRule 
+Point -->
+	alignScopeToAxes()
+	# Flatten shape.
+	s(1,0,1)
+	center(xz)
+	# Insert square shape using built-in cube.
+	primitiveQuad
+	MoveToCameraHeight
+
+MoveToCameraHeight -->
+	alignScopeToAxes()
+	t(0,Height, 0)
+	CameraControl
+
+CameraControl -->
+	# Tilt camera up and down.
+	r(scopeCenter, Tilt + 90 , 0, 0)
+	# Pan camera left and right.
+	r(scopeCenter, 0, Pan , 0)
+	
+	# Put camera object into place.
+	InsertCamera
+	# XX Removed Insert Focus for SINGAPORE DEMO.
+	#InsertFocus
+	
+	# Extend to focus.
+	t(0, -Zoom ,0)
+	# Scale to correct width, per zoom and angle of view.
+	s(scalePerZoomAndViewAngle, 0, getAspectScaleY * scalePerZoomAndViewAngle)
+	center(xz)
+	# Adjust position change from scale operation.
+	# Create pyramid shape representing viewshed.
+	taper(Zoom)
+
+	CameraDisplay
+ 
+InsertCamera -->
+	i("Camera/CameraRetro.obj")
+	rotate(rel,scope,0,90,0)
+	center(xz)
+	rotate(rel,scope,0,0,-90)
+	center(y)
+	# Move box to put lens in right place. 
+	t(-1, 0,0)
+	# Adjustment specifically for retro camera. Add case later for more types of cameras.
+	t(0, 0.2, 0)
+	# Scale sideways, specifically for retro camera.
+	s('1,'1,0.6)
+	center(z)
+	# Color the camera.
+	color(Camera_Color) 
+	X.
+
+
+const focalFrameScale = 0.2 
+
+InsertFocus -->
+	# FIX: Insert focus frame here rather than red box.
+	color(1,0,0)
+	# Extend to focus.
+	t(0, -Zoom +0.1,0)
+	# Scale to correct width, per zoom and angle of view.
+	s(focalFrameScale * scalePerZoomAndViewAngle, 0, focalFrameScale * getAspectScaleY * scalePerZoomAndViewAngle)
+	center(xz)
+	X.
+
+
+halfOfViewAngle = Horizontal_View_Angle / 2
+scalePerZoomAndViewAngle = 2 * ( Zoom * tan(halfOfViewAngle))
+	
+# FIX: Find other common camera angles.
+getAspectScaleY =
+	case Aspect_Ratio == "4:3": 3/4
+	case Aspect_Ratio == "16:9": 9/16
+	else: 1
+
+CameraDisplay -->
+	# Color the viewshed.
+	color(Viewshed_Color)
+	# Set transparency.
+	set(material.opacity, Transparency)
+	X.
+	
+	
+	
+	
+	
+	
+	
+	
+	

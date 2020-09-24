@@ -1,0 +1,253 @@
+/*
+Release: June 27, 2016
+Authors: Zurich R&D Center, last mod by Chris Wilkins
+*/
+
+version "2015.2"
+
+# Formal Park is modified OpenSpace from Philly rules.
+
+
+@Hidden
+import Plant:"/ESRI.lib/rules/Plants/Plant_Loader.cga"
+
+const hardscapePath = "assets/3D_City_Design_Assets/Material_Library/Hardscape/" 
+const grassPath = "assets/3D_City_Design_Assets/Material_Library/Grass/"
+const hedgePath = "assets/3D_City_Design_Assets/Material_Library/Hedges/"
+const peoplePath = "assets/3D_City_Design_Assets/People_by_lowpolygon3d_com/"
+
+
+##############################################################
+
+@Group("PARK LAYOUT", 10)
+
+@Order(10)
+@Range(10,50)
+attr Lawn_Width = 15
+
+@Order(20)
+@Range(10,50)
+attr Lawn_Length = 25
+
+@Order(30)
+@Range(0,180)
+attr Rotation = 0
+
+##############################################################
+
+@Group("PATHWAYS",20)
+
+@Order(10)
+@Range ("Brick Brown No Mortar Rough Running Bond", "Brick Brown No Mortar Running Bond", "Brick Brown Running Bond", "Brick Brown Stack Bond", "Brick Grey Running Bond", "Brick Red High Contrast Running Bond", "Brick Red No Mortar Running Bond", "Brick Red Recessed Mortar Running Bond", "Brick Red Running Bond", "Brick Red Stack Bond", "Brick Red Purple Running Bond", "Brick Varied Brown Running Bond", "Brick White Dirty Running Bond", "Brick White Painted Running Bond", "Brick White Rough Running Bond", "Cement Block Dark Grey Running Bond", "Cement Block Grey Running Bond", "Cement Block Grey Specks Running Bond", "Cement Block Light Running Bond", "Cement Block Square Grey Stack Bond", "Paver ADA", "Paver Brick Red Basket Weave", "Paver Brick Red Herringbone", "Paver Brown Octagon Tile", "Paver Grey Ashlar", "Paver Grey Herringbone", "Paver Grey Hexagon", "Paver Grey Square Stack Bond", "Paver Grey Variable Running Bond", "Paver Stone Varied") 
+attr Pathway_Type = "Paver Grey Ashlar"
+
+@Order(20)
+@Range(1,6) 
+attr Pathway_Width = 2
+
+@Order(30)
+@Range(.5, 10)  
+attr Pathway_Scale = 2
+
+
+
+##############################################################
+
+@Group("VEGETATION",30)
+
+@Order(10)
+@Range ("Random", "Standard Grass", "Park", "Bermuda 1", "Bermuda 2", "Bermuda Dark", "Bluegrass 1", "Bluegrass 2", "Grass Short", "Grass Thick", "St Augustine 1", "St Augustine 2", "Light Rye")
+attr Grass_Type = "Random"
+
+@Order(20)
+@Range(0.5, 20)
+attr Grass_Scale = 1
+
+@Order(30) 
+@Range("Random", "Alder Buckthorn","Amazon Sword Plant","American Chestnut","American Sycamore","Apricot","Australian Pine","Baldcypress","Balsam Fir","Bamboo","Banana Tree","Basswood","Bay Laurel","Black Locust","Blue Gum Eucalyptus","Boxwood","Cabbage Palm Fern","California Bay","California Incense Cedar","California Palm","California Redwood","California Walnut","Coconut Palm","Common Hawthorn","Common Whitebeam","Conker Tree","Date Palm","Desert Willow","Douglas Fir","European Beech","European Larch","Ficus","Field Elm","Flannelbush","Flowering Dogwood","Giant Sequoia","Hedgehog Agave","Japanese Angelica Tree","Lacy Tree Philodendron","Leyland Cypress","Lily of the Valley","Lodgepole Pine","Mediterranean Buckthorn","Mexican Palmetto","Mountain Mahogany","Northern Red Oak","Norway Maple","Norway Spruce","Orange Tree","Orchid","Oval-leaved Privet","Palm Lily","Palo Verde","Paper Birch","Parlour Palm","Prickly Pear Cactus","Red Alder","Red Hickory","Rhododendron Azaleas","Rose","Ruffle Palm","Saguaro Cactus","Sassafras","Scots Pine","Sea Islands Yucca","Shadbush","Snake Plant","Southern Magnolia","Spanish Broom","Strawberry Tree","Sugar Maple","Sunflower","Sweetgum","Umbrella Acacia","Western Juniper","White Ash","White Oak","White Poplar","White Willow","Witch Hazel","","_____________________________","GENERICS","","Generic Dead Tree","Generic Stump","Generic Unknown","","_____________________________","PROXIES","","Algarrobo","American Elderberry","American Pepper","American Silverberry","Athel Tamarisk","Avocado","Black Tupelo","Buttonbush","Canada Buffaloberry","Chinaberry Tree","Chinese Tallow Tree","Common Hackberry","Common Holly","Common Persimmon","Desert Bitterbrush","European Hornbeam","Giant Chinquapin","Honey Locust","Hophornbeam","Huckleberry Shrub","Japanese Hemlock","Japanese Nutmeg","Judas Tree","Lawson Cypress","Loblolly Bay","Mexican Buckeye","Necklacepod","Northern Bilberry","Northern White Cedar","Octopus Tree","Osage Orange","Paper Bark Tree","Pawpaw","Persian Silk Tree","Princess Tree","Smooth Sumac","Sourwood","Southern Wax Myrtle","Tanoak","Tree of Heaven","Turkish Hazel","Western Soapberry","White Mulberry","Yellow Poplar","Yew","","_____________________________","LATIN NAME","","Abies balsamea","Acacia tortilis","Acer platanoides","Acer saccharum","Aesculus hippocastanum","Agave stricta","Ailanthus altissima","Aiphanes horrida","Albizia julibrissin","Alnus rubra","Amelanchier canadensis","Aralia elata","Arbutus unedo","Asimina triloba","Betula papyrifera","Bulbophyllum phalaenopsis","Buxus sempervirens","Calocedrus decurrens","Carnegiea saguaro","Carpinus betulus","Carya ovalis","Castanea dentata","Casuarina equisetifolia","Celtis occidentalis","Cephalanthus occidentalis","Cercis siliquastrum","Cercocarpus montanus","Chamaecyparis lawsoniana","Chamaedorea elegans","Chilopsis linearis","Chrysolepis chrysophylla","Citrus sinensis","Cocos nucifera","Convallaria majalis","Cordyline petiolaris","Cornus florida","Corylus colurna","Crataegus monogyna","Cupressus leylandii","Cyrilla racemiflora","Diospyros virginiana","Echinodorus bleheri","Elaeagnus commutata","Eucalyptus globulus","Fagus sylvatica","Ficus benjamina","Frangula alnus","Fraxinus americana","Fremontodendron californicum","Generic deadtree","Generic stump","Generic unknown","Gleditsia triacanthos","Gordonia lasianthus","Hamamelis virginiana","Helianthus annuus","Ilex aquifolium","Juglans regia","Juniperus occidentalis","Larix decidua","Laurus nobilis","Ligustrum ovalifolium","Liquidambar styraciflua","Liriodendron tulipifera","Lithocarpus densiflorus","Maclura pomifera","Magnolia grandiflora","Melaleuca quinquenervia","Melia azedarach","Morus alba","Musa acuminata","Myrica cerifera","Nyssa sylvatica","Opuntia aciculata","Ostrya virginiana","Oxydendrum arboreum","Parkinsonia aculeata","Paulownia tomentosa","Persea americana","Philodendron selloum","Phlebodium aureum","Phoenix dactylifera","Phyllostachys aurea","Picea abies","Pinus contorta","Pinus sylvestris","Platanus occidentalis","Populus tremuloides","Prosopis nigra","Prunus armeniaca","Pseudotsuga menziesii","Purshia glandulosa","Quercus alba","Quercus rubra","Rhamnus alaternus","Rhododendron tsutsuji","Rhus glabra","Robinia pseudoacacia","Rosa grandiflora","Sabal mexicana","Salix alba","Sambucus canadensis","Sansevieria trifasciata","Sapindus saponaria","Sassafras albidum","Schefflera actinophylla","Schinus molle","Sequoia sempervirens","Sequoiadendron giganteum","Shepherdia canadensis","Sophora tomentosa","Sorbus aria","Spartium junceum","Tamarix aphylla","Taxodium distichum","Taxus baccata","Thuja occidentalis","Tilia americana","Torreya nucifera","Triadica sebifera","Tsuga diversifolia","Ulmus minor","Umbellularia californica","Ungnadia speciosa","Vaccinium uliginosum","Washingtonia filifera","Yucca gloriosa")
+attr Tree_Type = "Random"
+
+@Order(35) 
+@Range("Model","Fan","Analytical")
+attr Tree_Display = "Model" 
+
+@Order(40) 
+@Range(0,100)
+attr Tree_Percentage = 10
+
+@Order(50) 
+@Range(1,1000)
+attr Trees_Max_Per_Acre = 200
+
+@Order(60)
+@Range ("Hedge Standard", "Hedge Standard Dense", "Hedge Boxwood", "Hedge Cyprus", "Hedge Pine")
+attr Hedge_Type = "Hedge Standard"
+
+@Order(70)
+@Range(0,100) 
+attr Hedge_Percentage = 50
+
+
+##########################################################
+
+@Group("PEOPLE",60)
+
+@Range(0,100)
+attr People_Percentage = 20
+
+##########################################################
+
+@Group("DISPLAY",60)
+
+@Range(0,1)
+attr Transparency = 0
+
+
+################################################################
+## RULES
+##
+################################################################
+
+	
+
+@StartRule
+ParkShape -->	
+	alignScopeToAxes(y) 
+	set(material.opacity, 1 - Transparency)
+	rotateScope(0,Rotation,0)
+	FormalGridX
+
+FormalGridX -->
+	split(x){ { ~Lawn_Width: FormalGridZ | Pathway_Width: Hardscape }* 
+			|   ~Lawn_Width: FormalGridZ }
+
+FormalGridZ -->
+	split(z){ { ~Lawn_Length: LawnCell | Pathway_Width: Hardscape }* 
+			|   ~Lawn_Length: LawnCell }
+	
+LawnCell -->
+	LawnTexture
+	LawnHedgesAndFeatures
+	
+LawnTexture -->
+	case Grass_Type == "Random":
+		# Scale is larger on the random option, because the two textures there are larger. 
+		setupProjection(0, scope.xz, 15*Grass_Scale, 15*Grass_Scale) projectUV(0)
+		rotateUV(0,rand(360))
+		texture(fileRandom(grassPath + "Random/*.jpg"))
+	else:
+		setupProjection(0, scope.xz, 5*Grass_Scale, 5*Grass_Scale) projectUV(0)
+		rotateUV(0,rand(360))
+		texture(grassPath + Grass_Type + ".jpg")
+
+hedgeRandWidth = 70%: rand(0.6,1) else: 0	
+hedgeRandHeight = 40%: 1 else: 1.6
+
+LawnHedgesAndFeatures -->
+	# Make hedges first.
+	case p(Hedge_Percentage/100) && scope.sx > 4 && scope.sz > 4:
+		offset(-0.3, inside)
+		shapeO(hedgeRandWidth, hedgeRandWidth, hedgeRandWidth, hedgeRandWidth)
+			{shape: Hedge(hedgeRandHeight) | remainder: LawnTreesAndPeople} 
+	else:
+		LawnTreesAndPeople
+
+LawnTreesAndPeople -->
+	offset(-0.5, inside) 
+	Trees 
+	LawnPeople
+	
+LawnPeople -->
+	# Lawn people have random rotaion.
+	scatter(surface,People_Percentage * 0.0025 * geometry.area,uniform) { Human(rand(360))}
+
+Hedge(hedgeHeight) -->
+	split(x){~1: HedgePartX(hedgeHeight) | Pathway_Width: NIL | ~1: HedgePartX(hedgeHeight)}
+	
+HedgePartX(hedgeHeight) -->
+	split(z){~1: HedgePartZ(hedgeHeight) | Pathway_Width: NIL | ~1: HedgePartZ(hedgeHeight)}
+
+HedgePartZ(hedgeHeight) -->
+	extrude(world.y, hedgeHeight)
+	comp(f){ bottom: NIL | all: HedgeTexture}	
+
+HedgeTexture -->
+	setupProjection(0,scope.xy,5,5) 
+	projectUV(0)
+	texture(hedgePath + Hedge_Type + ".jpg")
+
+#######################################################################	
+
+Trees -->
+	offset(0.2, inside)
+ 	scatter(surface, (Trees_Max_Per_Acre * (geometry.area/4047) * Tree_Percentage/100), uniform) {Tree} 
+	NIL
+
+Tree -->
+	set(Plant.Name, treeTypeAdjusted)
+	set(Plant.Height, Plant.getStandardHeight)
+	set(Plant.Radius, Plant.getRadius)
+	set(Plant.Representation, Tree_Display) 
+	Plant.Generate()
+
+treeTypeAdjusted = 
+	case Tree_Type == "Random": treeTypeRandom
+	else: Tree_Type
+
+treeTypeRandom = 
+	20%: "Tree of Heaven"
+	20%: "White Ash"
+	20%: "Common Hackberry"
+	20%: "Sweetgum"
+	else:"Sassafras"
+
+
+		
+#########################################################################
+
+Hardscape -->
+	alignScopeToGeometry(yUp,0,longest)
+	HardscapePeople
+	setupProjection(0, scope.xz, 5*Pathway_Scale, 5*Pathway_Scale) 
+	projectUV(0)
+	texture(hardscapePath + Pathway_Type + ".jpg")
+	X.
+
+HardscapePeople -->
+	# Hardscape people are aimed in direction of sidewalk.
+	case scope.sx > 1000:
+		split(x){ '0.5: HardscapePeople | '0.5: HardscapePeople }
+	case People_Percentage > 0:
+		scatter(surface, People_Percentage * 0.005 * geometry.area,uniform) { Human(0) } 
+	else:
+		NIL
+
+
+# -------------------------------------------
+# People
+# 
+# Sample assets provided by lowpolygon3d.com
+# 
+# More assets with high-res textures can be 
+# purchased at http://www.lowpolygon3d.com.
+# 
+# -------------------------------------------
+
+peopleAsset = fileRandom(peoplePath + "*.obj")
+dirHuman = 50%: 90 else: -90
+
+Human(rotation) -->
+	case (scope.sx < 2 && p(People_Percentage/100*0.3))	
+	|| (scope.sx >= 2 && p(People_Percentage/100)):
+		HumanInsert(rotation)
+	else:
+		NIL
+
+HumanInsert(rotation) -->
+	alignScopeToAxes(y)
+	t(0,0,'rand(0.1,0.6))
+	s(0,rand(1.7,1.9),0) 
+	r(0,dirHuman + rotation,0) 
+	i(peopleAsset)
+
+

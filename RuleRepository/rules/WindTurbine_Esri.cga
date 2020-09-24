@@ -1,0 +1,192 @@
+/**
+ * File:    WindTurbine_Esri.cga
+ * Created: 20 Mar 2017 15:48:04 GMT
+ * Author:  cwilkins@esri.com
+ * last update: 9-12-2018
+ */
+
+version "2018.1"
+
+
+
+@Group("Orientation",1)
+
+@Description("Cardinal direction, clockwise. (N = 0, E = 90, S = 180, W = 270)")
+@Range(-180,180)
+attr CardinalDirection = 0 
+
+
+@Group("Structure",2)
+
+@Order(10)
+attr PoleHeight = 500
+const _PoleHeight = meters(PoleHeight)
+
+@Order(20)
+attr PoleBaseDiameter = 15
+const _PoleBaseDiameter = meters(PoleBaseDiameter)
+
+@Order(30)
+attr PoleTopDiameter = 10
+const _PoleTopDiameter = meters(PoleTopDiameter)
+
+@Order(40)
+attr BoxHeight = 20
+const _BoxHeight = meters(BoxHeight)
+
+@Order(50)
+attr BladeLength = PoleHeight / 2   
+const _BladeLength = meters(BladeLength)
+
+@Order(60)
+attr BladeCount = 3
+const _BladeCount = rint(BladeCount)
+
+
+@Group("Setup")
+
+@Range("Feet", "Meters")
+attr Units = "Feet"
+
+@Description("Disabling this will make the first blade be vertically aligned.")
+attr RandomBladeRotation = true
+
+
+
+@StartRule @InPoint
+Turbine --> 
+	alignScopeToAxes()
+	rotateScope(0, -CardinalDirection,0)
+	primitiveQuad
+	Pole
+	t(0, _PoleHeight , 0)
+	Box
+
+Pole -->
+	s( _PoleBaseDiameter ,0, _PoleBaseDiameter )
+	center(xz)
+	Frustum( _PoleHeight , _PoleBaseDiameter / 2, _PoleTopDiameter / 2, 1)
+	
+Box -->
+	s( _BoxHeight , 0, _BoxHeight *2)
+	center(xz)
+	extrude( _BoxHeight )
+	 t(0,0,- _BoxHeight * 0.25)
+	comp(f){front: LeaveIt. Blades | all: X.}
+	
+	
+	
+
+@Hidden
+attr coneHeightFrustum = 0   
+
+Frustum(height, radiusBottom, radiusTop, zScale) -->
+	# This runs on quad with yUp.
+	set(coneHeightFrustum, (radiusBottom * height) / (radiusBottom - radiusTop))
+	extrude(coneHeightFrustum)
+	primitiveCone
+	split(y){height: s('1,'1,'zScale) center(z) X.}	
+
+	
+
+const bladePerBox = 0.8
+
+Blades -->
+	# This is now zUp.
+	BladeCone
+	BladeMount
+
+BladeCone -->
+	s('bladePerBox, 'bladePerBox, 0)
+	center(xy)
+	t(0,0,-( _BoxHeight * bladePerBox))
+	extrude( _BoxHeight * bladePerBox * 2)
+	primitiveSphere
+	
+BladeMount -->
+	# First blade is upright by default.
+	s('(bladePerBox * 0.5), '(bladePerBox * 0.5), 0)
+	center(xy)
+	extrude( _BoxHeight * bladePerBox / 2)
+	Blades(0)
+		
+Blades(index) -->
+	case RandomBladeRotation:
+		r(scopeCenter, 0, 0, rand(0,360))
+		BladesStep2(index)
+	else:
+		BladesStep2(index)
+
+BladesStep2(index) -->
+	case index < (_BladeCount):
+		r(scopeCenter, 0, 0, (360 / _BladeCount))
+		BladesStep2(index + 1)
+		comp(f){back: Blade | all: NIL} 
+	else:
+		NIL
+
+const BladeCone1Ratio = 0.1
+const BladeCone2Ratio = 0.1
+const BC1Length = BladeCone1Ratio * _BladeLength
+const BC2Length = BladeCone2Ratio * _BladeLength
+const BC3Length = _BladeLength - BC1Length - BC2Length
+	
+@Hidden
+attr bladeMountQuadSize = 0
+	
+Blade --> 
+	set(bladeMountQuadSize, scope.sx)
+	BC1
+	BC2
+	BC3
+	
+	
+BC1 -->
+	t(0,0,BC1Length)
+	r(scopeCenter,180,0,0)
+	alignScopeToGeometry(yUp, any, longest)
+	Frustum(BC1Length, bladeMountQuadSize, bladeMountQuadSize / 2, 0.5)
+	 
+
+BC2 -->
+	t(0,0,BC1Length + BC2Length)
+	r(scopeCenter,180,0,0)
+	alignScopeToGeometry(yUp, any, longest)
+	s('2,0,'2)
+	center(z)
+	EccentricFrustum(BC2Length, bladeMountQuadSize * 2 , bladeMountQuadSize, 0.5)
+
+BC3 -->
+	t(0,0,BC1Length + BC2Length)
+	alignScopeToGeometry(yUp, any, longest)
+	s('2,0,'2)
+	center(z)
+	EccentricFrustum(BC3Length, bladeMountQuadSize * 2 , bladeMountQuadSize, 0.5)
+	
+	
+EccentricFrustum(height, radiusBottom, radiusTop, zScale) -->
+	# This runs on quad with yUp.
+	set(coneHeightFrustum, (radiusBottom * height) / (radiusBottom - radiusTop))
+	extrude(coneHeightFrustum)
+	i("PipesAndCones/ECone32NoBottom.obj")
+	split(y){height: s('1,'1,'zScale) center(z) X.}	
+	
+	
+	
+	
+	
+const metersPerFoot = 0.3048
+meters(lengthInEitherFeetOrMeters) =
+	case Units == "Feet": lengthInEitherFeetOrMeters * metersPerFoot
+	else: lengthInEitherFeetOrMeters
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

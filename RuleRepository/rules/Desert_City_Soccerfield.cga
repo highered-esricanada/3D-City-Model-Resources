@@ -1,0 +1,83 @@
+/**
+ * Author:  matt, Esri R&D Center Zurich
+ */
+
+version "2013.1"
+
+attr Orientation_Change = false
+attr Goal_Back_Distance = 1.8
+attr Goal_Width = 6
+attr Goal_Height = 2
+attr Goal_Depth = 2
+attr Number_Balls = 7
+
+
+soccerFieldTex = "assets/soccerField/soccerField.jpg"
+goalAsset = "assets/soccerField/soccerGoal.obj"
+esriBall = "assets/soccerField/esriBall.obj"
+
+
+goalEdgeID =
+	case Orientation_Change :
+		1
+	else :
+		0
+UV_Rotation = 
+	case Orientation_Change :
+		0
+	else :
+		90
+
+@StartRule
+SoccerField -->
+	Goals
+	Balls
+	setupProjection(0, scope.xz, '1,'1)
+	projectUV(0)
+	rotateUV(0,UV_Rotation)
+	texture(soccerFieldTex)
+	Field.
+
+Goals -->
+	PutGoal(goalEdgeID)
+	PutGoal(goalEdgeID + 2)
+	
+
+PutGoal(edgeIndex) -->
+	alignScopeToGeometry(yUp, 0, edgeIndex)
+	split(z) {Goal_Back_Distance : NIL | 0.05 : GoalStripe | ~1 : NIL}
+
+GoalStripe -->
+	s(Goal_Width, Goal_Height, Goal_Depth)
+	center(x)
+	i(goalAsset)
+	Goal.
+
+Balls -->
+	scatter(surface,Number_Balls,uniform) { PutBall }
+
+PutBall -->
+	i(esriBall,yUp,keepSizeAndPosition)
+	t(0,'0.5,0)
+	r(scopeCenter, rand(360), rand(360), rand(360))
+	Ball.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

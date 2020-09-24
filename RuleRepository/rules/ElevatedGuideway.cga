@@ -1,0 +1,117 @@
+/**
+ * File:    Guideway.cga
+ * Created: 19 Jun 2012 13:23:23 GMT
+ * Author:  matt6767
+ */
+
+version "2012.1"
+
+
+
+@Group ("GUIDEWAY")
+attr Track_Width			= 1.2
+@Group ("GUIDEWAY")
+attr Track_Dist				= 2
+@Group ("GUIDEWAY")
+attr Rail_Dist				= 1
+
+
+@Group ("PILLARS")
+attr Pillar_Distance		= 40
+@Group ("PILLARS")
+attr Pillar_Width			= 4
+@Group ("PILLARS")
+attr Pillar_Thickness		= 1.8
+
+
+heightAboveFloor = convert(y, scope, world, pos, 0, 0, 0)
+
+
+
+Sidewalk -->
+	NIL
+
+@StartRule
+Guideway -->
+	alignScopeToAxes(y)
+	GWBase
+	Pillars(heightAboveFloor)
+
+baseThickness = .8
+
+GWBase -->
+	extrude(world.y, baseThickness)
+	comp(f) {top : GWSidewalls GWDrivingArea | all : Base.}
+
+
+
+GWDrivingArea -->
+	split(v,unitSpace,0) { Track_Dist / 2 : TrackBed | Track_Dist : Track | ~Track_Dist * 2 : TrackBed  | Track_Dist : Track | Track_Dist / 2 : TrackBed}
+
+TrackBed -->
+	color(.2,.2,.2)
+
+Track -->
+	TrackBottom
+	split(v,unitSpace,0) { ~1 : NIL | Rail_Dist : RailBand | ~1 : NIL }
+
+RailBand -->
+	split(v,unitSpace,0) { ~.05 : Rail | ~1 : NIL | ~.05 : Rail }
+
+Rail -->
+	color(.2,.2,.2)
+	extrude (world.y, 0.14)
+
+
+
+TrackBottom -->
+	color("#f8c9a3")
+
+GWSidewalls -->
+	split(v,unitSpace,0) { 0.4 : GWSidewallConstr | ~1 : NIL | 0.4 : GWSidewallConstr }
+
+GWSidewallConstr -->
+	roofGable(70)
+
+
+pillarAsset = "assets/guideway/pillar.obj"
+pillarMarkerDim = 0.05
+
+Pillars(height) -->
+	split(u,unitSpace,0) { ~ Pillar_Distance : NIL | pillarMarkerDim : PillarBand(height)  } *
+
+PillarBand(height) -->
+	s(Pillar_Width, heightAboveFloor, Pillar_Thickness)
+	#print (height)
+	center(xz)
+	i(pillarAsset)
+	t(0,'-1,0)
+	r(scopeCenter, 0, 90, 0)
+	color(.6,.6,.6)
+	Pillar.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

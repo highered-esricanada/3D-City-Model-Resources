@@ -1,0 +1,10 @@
+/**
+ * File:    plane.cga
+ * Created: 10 May 2019 20:16:25 GMT
+ * Author:  Esri Canada */
+
+version "2018.1"
+
+shape -->
+	color("#FFFFFF")
+	done.

@@ -1,0 +1,309 @@
+/**
+ * File:    tajMahal.cga
+ * Created: 10 Jun 2016 15:38:15 GMT
+ * Author:  Esri R&D Center Zurich
+ */
+
+version "2017.1"
+
+
+const factor = 73/14.1
+
+const base_width = 26.65*factor
+const base_height = 1.3*factor
+const base_depth = base_width
+
+const main_width = 13.4*factor
+const main_height = 5.2*factor
+const main_depth = main_width
+const mainCornerCut = 0.85*sqrt(2)*factor
+
+const tallFacade_width = 5.2*factor
+const tallFacade_height = 6.5*factor
+const tallFacade_depth = 0.4*factor
+
+const tallColumn_height = 7.5*factor
+const shortColumn_height = 6.4*factor
+const decoColumn_width = 0.2*factor
+const deco_height = 0.15*factor
+const decoLedge_height = 0.03*factor
+
+const domeBase_width = 6.3*factor
+const domeBase_height = 3.5*factor
+const domeLedge_height = 0.3
+const domeSplit = 0.65
+const domeSplitNIL = 1 - domeSplit
+const domeScale = 1.075
+
+const needleWidth_percent = 0.03
+const needleSphere_percent1 = 2.6
+const needleSphere_percent2 = 2.2
+const needleSphere_percent3 = 1.9
+
+const miniTowerMargin = 1.75*factor
+const miniTower_width = 2.1*factor
+const miniTower_height = 1.45*factor
+const miniTowerLedge_height = 0.1*factor
+
+const towerMargin = 0.25*factor
+const tower_width = 1.35*factor
+const towerSection_height = 2.6*factor
+const towerLedge_height = 0.1*factor
+const towerDomeBase_height = 1.1*factor
+
+const columnWidth_percent = 0.3
+
+const pool_width = 10
+const pool_depth = 150
+
+const treeSpacing = 10
+const tree_width = 0.9
+const tree_height = 3
+const treeStump_width = 0.2
+const treeStump_height = 0.5
+const treeStumpOverlap = 0.1
+const green = "#006346"
+const brown = "#462b18"
+
+
+@StartRule
+Lot -->
+	primitiveCube(base_width, base_height, base_depth)
+	center(xz)
+	Base.
+	Pool
+	t(0, base_height, 0)
+	Main
+	TowerLeftFront
+	TowerLeftBack
+	TowerRightFront
+	TowerRightBack
+	
+Main -->
+	s(main_width, main_height, main_depth)
+	center(xz)
+	rotateScope(0, 45, 0)
+	split(x) { mainCornerCut: NIL
+			 | ~1: split(z) { mainCornerCut: NIL
+			 				| ~1: rotateScope(0, -45, 0) MainBlock
+			 				| mainCornerCut: NIL }
+			 | mainCornerCut: NIL }
+			 
+MainBlock -->
+	comp(f) { top: Roof
+			| 2: MainFacade
+			| 3: MainFacade
+			| 4: MainFacade
+			| 5: MainFacade
+			| side: CornerFacade. }
+			
+MainFacade -->
+	split(x) { ~1: SideFacade("left")
+			 | tallFacade_width: TallFacade
+			 | ~1: SideFacade("right") }
+			 
+TallFacade -->
+	extrude(tallFacade_depth)
+	rotateScope(-90, 0, 0)
+	t(0, 0, -tallFacade_depth)
+	s('1, tallFacade_height, '1)
+	
+SideFacade(side) -->
+	case side == "left":
+		Facade.
+		Column(shortColumn_height)
+		t('1, 0, 0)
+		Column(tallColumn_height)
+	else:
+		Facade.
+		Column(tallColumn_height)
+		t('1, 0, 0)
+		Column(shortColumn_height)
+	
+Column(h) -->
+	extrude(decoColumn_width)
+	rotateScope(-90, 0, 0)
+	s(decoColumn_width, h, '1)
+	t('-0.5, 0, '-0.9)
+	set(trim.vertical, false)
+	ColumnTop
+	primitiveCylinder(6)
+	DecoColumn.
+	
+ColumnTop -->
+	t(0, '1, 0)
+	s('1, deco_height, '1)
+	[ primitiveCone(12, 0.54*scope.sx, 3*scope.sz) r(180, 0, 0) t(0, -deco_height, -scope.sz) DecoCone.]
+	t(0, deco_height, 0)
+	[ s('1.1, decoLedge_height, '1.1) center(xz) primitiveCylinder(12) DecoLedge. ]
+	t(0, decoLedge_height, 0)
+	Dome
+			
+Roof -->
+	alignScopeToAxes(y)
+	FlatRoof.
+	MainDome
+	MiniTowerLeftFront
+	MiniTowerLeftBack
+	MiniTowerRightFront
+	MiniTowerRightBack
+	
+MainDome -->
+	s(domeBase_width, domeBase_height, domeBase_width)
+	center(xz)
+	[ primitiveCylinder()
+	  DomeBase.
+	  t(0, domeBase_height, 0)
+	  s('1.02, domeLedge_height, '1.02)
+	  center(xz)
+	  DomeLedge. ]
+	t(0, domeBase_height + domeLedge_height, 0)
+	s('1, 0, '1)
+	Dome
+			 
+Dome -->
+	alignScopeToAxes(y)
+	primitiveSphere(16, 16, domeScale*0.5*scope.sx)
+	split(y) { 'domeSplitNIL: NIL
+			 | 'domeSplit: t(0, '-(domeSplitNIL/domeSplit), 0) OnionDome }
+			 
+OnionDome -->
+	split(y) { '0.94: DomeBottom.
+			 | '0.06: ConeTop }
+			 
+ConeTop -->
+	s('1, 0.3*scope.sx, '1)
+	primitiveCone()
+	PointyTop.
+	Needle
+	
+Needle -->
+	t(0, '0.95, 0)
+	s('needleWidth_percent, '1.6, 'needleWidth_percent)
+	center(xz)
+	[ primitiveCylinder() NeedleCylinder. ]
+	[ t(0, '1, 0) s('1, 0, '1) primitiveCone() NeedlePoint. ]
+	t(0, '0.2, 0)
+	[ s('needleSphere_percent1, needleSphere_percent1*scope.sx, 'needleSphere_percent1) center(xz) primitiveSphere() NeedleSphere. ]
+	t(0, '0.35, 0)
+	[ s('needleSphere_percent2, needleSphere_percent2*scope.sx, 'needleSphere_percent2) center(xz) primitiveSphere() NeedleSphere. ]
+	t(0, '0.2, 0)
+	[ s('needleSphere_percent3, needleSphere_percent3*scope.sx, 'needleSphere_percent3) center(xz) primitiveSphere() NeedleSphere. ]
+	
+MiniTowerLeftFront -->
+	t(miniTowerMargin, 0, scope.sz - miniTowerMargin - miniTower_width)
+	s(miniTower_width, miniTower_height, miniTower_width)
+	MiniTower
+	
+MiniTowerLeftBack -->
+	t(miniTowerMargin, 0, miniTowerMargin)
+	s(miniTower_width, miniTower_height, miniTower_width)
+	MiniTower
+	
+MiniTowerRightFront -->
+	t(scope.sx - miniTowerMargin - miniTower_width, 0, scope.sz - miniTowerMargin - miniTower_width)
+	s(miniTower_width, miniTower_height, miniTower_width)
+	MiniTower
+	
+MiniTowerRightBack -->
+	t(scope.sx - miniTowerMargin - miniTower_width, 0, miniTower_width)
+	s(miniTower_width, miniTower_height, miniTower_width)
+	MiniTower
+	
+MiniTower -->
+	TowerDomeBase
+	t(0, '1, 0)
+	[ s('1.1, miniTowerLedge_height, '1.1) center(xz) primitiveCylinder() MiniTowerLedge. ]
+	t(0, miniTowerLedge_height, 0)
+	s('1, 0, '1)
+	Dome
+	
+TowerLeftFront -->
+	t(towerMargin, 0, scope.sz - towerMargin - tower_width)
+	s(tower_width, towerSection_height, tower_width)
+	Tower
+	
+TowerLeftBack -->
+	t(towerMargin, 0, towerMargin)
+	s(tower_width, towerSection_height, tower_width)
+	Tower
+
+TowerRightFront -->
+	t(scope.sx - towerMargin - tower_width, 0, scope.sz - towerMargin - tower_width)
+	s(tower_width, towerSection_height, tower_width)
+	Tower
+
+TowerRightBack -->
+	t(scope.sx - towerMargin - tower_width, 0, towerMargin)
+	s(tower_width, towerSection_height, tower_width)
+	Tower
+	
+Tower -->
+	TowerPart(0)
+	
+TowerPart(i) -->
+	case i == 3:
+		t(0, towerLedge_height, 0) s('0.9, towerDomeBase_height, '0.9) center(xz) TowerDomeBase
+		t(0, '1, 0)
+		[ s('1.1, 0.5*towerLedge_height, '1.1) center(xz) TowerLedge. ]
+		t(0, 0.5*towerLedge_height, 0)
+		s('1, 0, '1)
+		Dome
+	case i == 0:
+		primitiveCylinder() TowerPart.
+		t(0, '1, 0)
+		[ s('1.1, towerLedge_height, '1.1) center(xz) TowerLedge. ]
+		TowerPart(i+1)
+	else:
+		t(0, towerLedge_height, 0) s('0.9, '1, '0.9) center(xz) TowerPart.
+		t(0, '1, 0)
+		[ s('1.1, towerLedge_height, '1.1) center(xz) TowerLedge. ]
+		TowerPart(i+1)
+
+TowerDomeBase -->
+	primitiveCylinder(6)
+	comp(f) { side: TowerColumn }
+	
+TowerColumn -->
+	s('columnWidth_percent, '1, 0)
+	extrude(scope.sx)
+	rotateScope(-90, 0, 0)
+	t(0, 0, '-1)
+	set(trim.vertical, false)
+	primitiveCylinder(8)
+	
+Pool -->
+	t(0, 0, base_depth + 10)
+	s(pool_width, 0, pool_depth)
+	center(x)
+	[ t('-1, 0, 0) s('0.5, 0, '1) t('1, 0, 0) Trees ]
+	[ t('1, 0, 0) s('0.5, 0, '1) Trees ]
+	primitiveQuad()
+	color(0.4,0.5,0.4)
+	set(material.specular.r,0.8) set(material.specular.g,0.8) set(material.specular.b,0.8)
+	set(material.reflectivity,0.5) set(material.shininess,10)
+	Pool.
+	
+Trees -->
+	split(z) { ~treeSpacing: Tree }*
+	
+Tree -->
+	s(tree_width, tree_height, tree_width)
+	center(xz)
+	primitiveCube()
+	TreeStump
+	TreeCrown
+	
+TreeStump -->
+	s(treeStump_width, treeStump_height + treeStumpOverlap, treeStump_width)
+	center(xz)
+	primitiveCylinder()
+	color(brown)
+	
+TreeCrown -->
+	t(0, treeStump_height, 0)
+	s('1, tree_height - treeStump_height, '1)
+	primitiveSphere()
+	color(green)
+
+	

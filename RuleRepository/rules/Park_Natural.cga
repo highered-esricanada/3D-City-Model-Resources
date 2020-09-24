@@ -1,0 +1,132 @@
+/*
+Release: June 27, 2016
+Authors: Zurich R&D Center, last mod by Chris Wilkins
+*/
+
+version "2015.2"
+
+
+@Hidden
+import Plant:"/ESRI.lib/rules/Plants/Plant_Loader.cga"
+
+const parkGroundCover = "3D_City_Design_Assets/Material_Library/Grass/Park.jpg"
+
+##############################################################
+
+@Group("PARK LAYOUT", 10)
+
+@Order(30)
+@Range(0,180)
+attr Rotation = 0
+
+##############################################################
+
+@Group("VEGETATION",30)
+
+@Order(30) 
+@Range("Random", "Alder Buckthorn","Amazon Sword Plant","American Chestnut","American Sycamore","Apricot","Australian Pine","Baldcypress","Balsam Fir","Bamboo","Banana Tree","Basswood","Bay Laurel","Black Locust","Blue Gum Eucalyptus","Boxwood","Cabbage Palm Fern","California Bay","California Incense Cedar","California Palm","California Redwood","California Walnut","Coconut Palm","Common Hawthorn","Common Whitebeam","Conker Tree","Date Palm","Desert Willow","Douglas Fir","European Beech","European Larch","Ficus","Field Elm","Flannelbush","Flowering Dogwood","Giant Sequoia","Hedgehog Agave","Japanese Angelica Tree","Lacy Tree Philodendron","Leyland Cypress","Lily of the Valley","Lodgepole Pine","Mediterranean Buckthorn","Mexican Palmetto","Mountain Mahogany","Northern Red Oak","Norway Maple","Norway Spruce","Orange Tree","Orchid","Oval-leaved Privet","Palm Lily","Palo Verde","Paper Birch","Parlour Palm","Prickly Pear Cactus","Red Alder","Red Hickory","Rhododendron Azaleas","Rose","Ruffle Palm","Saguaro Cactus","Sassafras","Scots Pine","Sea Islands Yucca","Shadbush","Snake Plant","Southern Magnolia","Spanish Broom","Strawberry Tree","Sugar Maple","Sunflower","Sweetgum","Umbrella Acacia","Western Juniper","White Ash","White Oak","White Poplar","White Willow","Witch Hazel","","_____________________________","GENERICS","","Generic Dead Tree","Generic Stump","Generic Unknown","","_____________________________","PROXIES","","Algarrobo","American Elderberry","American Pepper","American Silverberry","Athel Tamarisk","Avocado","Black Tupelo","Buttonbush","Canada Buffaloberry","Chinaberry Tree","Chinese Tallow Tree","Common Hackberry","Common Holly","Common Persimmon","Desert Bitterbrush","European Hornbeam","Giant Chinquapin","Honey Locust","Hophornbeam","Huckleberry Shrub","Japanese Hemlock","Japanese Nutmeg","Judas Tree","Lawson Cypress","Loblolly Bay","Mexican Buckeye","Necklacepod","Northern Bilberry","Northern White Cedar","Octopus Tree","Osage Orange","Paper Bark Tree","Pawpaw","Persian Silk Tree","Princess Tree","Smooth Sumac","Sourwood","Southern Wax Myrtle","Tanoak","Tree of Heaven","Turkish Hazel","Western Soapberry","White Mulberry","Yellow Poplar","Yew","","_____________________________","LATIN NAME","","Abies balsamea","Acacia tortilis","Acer platanoides","Acer saccharum","Aesculus hippocastanum","Agave stricta","Ailanthus altissima","Aiphanes horrida","Albizia julibrissin","Alnus rubra","Amelanchier canadensis","Aralia elata","Arbutus unedo","Asimina triloba","Betula papyrifera","Bulbophyllum phalaenopsis","Buxus sempervirens","Calocedrus decurrens","Carnegiea saguaro","Carpinus betulus","Carya ovalis","Castanea dentata","Casuarina equisetifolia","Celtis occidentalis","Cephalanthus occidentalis","Cercis siliquastrum","Cercocarpus montanus","Chamaecyparis lawsoniana","Chamaedorea elegans","Chilopsis linearis","Chrysolepis chrysophylla","Citrus sinensis","Cocos nucifera","Convallaria majalis","Cordyline petiolaris","Cornus florida","Corylus colurna","Crataegus monogyna","Cupressus leylandii","Cyrilla racemiflora","Diospyros virginiana","Echinodorus bleheri","Elaeagnus commutata","Eucalyptus globulus","Fagus sylvatica","Ficus benjamina","Frangula alnus","Fraxinus americana","Fremontodendron californicum","Generic deadtree","Generic stump","Generic unknown","Gleditsia triacanthos","Gordonia lasianthus","Hamamelis virginiana","Helianthus annuus","Ilex aquifolium","Juglans regia","Juniperus occidentalis","Larix decidua","Laurus nobilis","Ligustrum ovalifolium","Liquidambar styraciflua","Liriodendron tulipifera","Lithocarpus densiflorus","Maclura pomifera","Magnolia grandiflora","Melaleuca quinquenervia","Melia azedarach","Morus alba","Musa acuminata","Myrica cerifera","Nyssa sylvatica","Opuntia aciculata","Ostrya virginiana","Oxydendrum arboreum","Parkinsonia aculeata","Paulownia tomentosa","Persea americana","Philodendron selloum","Phlebodium aureum","Phoenix dactylifera","Phyllostachys aurea","Picea abies","Pinus contorta","Pinus sylvestris","Platanus occidentalis","Populus tremuloides","Prosopis nigra","Prunus armeniaca","Pseudotsuga menziesii","Purshia glandulosa","Quercus alba","Quercus rubra","Rhamnus alaternus","Rhododendron tsutsuji","Rhus glabra","Robinia pseudoacacia","Rosa grandiflora","Sabal mexicana","Salix alba","Sambucus canadensis","Sansevieria trifasciata","Sapindus saponaria","Sassafras albidum","Schefflera actinophylla","Schinus molle","Sequoia sempervirens","Sequoiadendron giganteum","Shepherdia canadensis","Sophora tomentosa","Sorbus aria","Spartium junceum","Tamarix aphylla","Taxodium distichum","Taxus baccata","Thuja occidentalis","Tilia americana","Torreya nucifera","Triadica sebifera","Tsuga diversifolia","Ulmus minor","Umbellularia californica","Ungnadia speciosa","Vaccinium uliginosum","Washingtonia filifera","Yucca gloriosa")
+attr Tree_Type = "Random"
+
+@Order(35) 
+@Range("Model","Fan","Analytical") 
+attr Tree_Display = "Model" 
+
+@Order(37)
+@Range(0,10) 
+attr Tree_Free_Border = 5
+	const smallerDimension = case scope.sx > scope.sz: scope.sz else: scope.sx
+	const Tree_Free_Border_Adjusted = case Tree_Free_Border > smallerDimension * 0.45: smallerDimension * 0.45 else: Tree_Free_Border    
+
+@Order(40) 
+@Range(0,100)
+attr Tree_Percentage = 10
+
+@Order(50) 
+@Range(1,1000)
+attr Trees_Max_Per_Acre = 200
+
+############################################################
+
+@Group("GROUND COVER", 40) 
+
+@Order(10)
+@Range (0.1, 20)
+attr Ground_Cover_Scale = 1
+
+############################################################
+
+@Group("DISPLAY",60)
+
+@Range(0,1)
+attr Transparency = 0
+
+############################################################
+
+
+@StartRule
+ParkNatural -->	
+	alignScopeToAxes(y) 
+	set(material.opacity, 1 - Transparency)
+	rotateScope(0,Rotation,0)
+	GroundCover
+	Trees
+
+Trees -->
+	offset(-Tree_Free_Border_Adjusted, inside)
+ 	scatter(surface, (Trees_Max_Per_Acre * (geometry.area/4047) * Tree_Percentage/100), uniform) {Tree} 
+	NIL
+
+Tree -->
+	set(Plant.Name, treeTypeAdjusted)
+	set(Plant.Height, Plant.getStandardHeight)
+	set(Plant.Radius, Plant.getRadius)
+	set(Plant.Representation, Tree_Display) 
+	Plant.Generate()
+
+treeTypeAdjusted = 
+	case Tree_Type == "Random": treeTypeRandom
+	else: Tree_Type
+
+treeTypeRandom = 
+	20%: "Tree of Heaven"
+	20%: "White Ash"
+	20%: "Common Hackberry"
+	20%: "Sweetgum"
+	else:"Sassafras"
+
+#####################################################
+
+GroundCover -->
+	setupProjection(0, scope.xz, Ground_Cover_Scale * scope.sx, Ground_Cover_Scale * scope.sz)
+	projectUV(0)
+	offsetUV(0,rand(1), rand(1))
+	rotateUV(0,rand(360))
+	texture(parkGroundCover)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

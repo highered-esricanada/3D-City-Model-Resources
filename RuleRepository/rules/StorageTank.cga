@@ -1,0 +1,540 @@
+/**
+ * File:    Tank.cga
+ * Created: 27 Jan 2015 23:12:02 GMT
+ * Author:  chri7180
+ 
+ Updated in 2016 to show billboard image. Probably hard-coded the image. -CW
+ Also needs updated to 2016 and use nice new primitives.
+ */
+
+version "2014.1"
+
+
+@Hidden
+import ImagePatchXY:"rules/ImagePatchXY.cga"
+
+
+attr Height = 30
+attr Rotation = 0
+const largerOfScopeXZ = case scope.sx > scope.sz: scope.sx else: scope.sz
+const radius = largerOfScopeXZ / 2
+
+@StartRule
+TankFootprint -->
+	# The usual.
+	alignScopeToAxes(y)
+	# Make the footprint be the outer square.
+	s(largerOfScopeXZ, 0, largerOfScopeXZ)
+	center(xz)
+	rotateScope(0,Rotation,0)	
+	i("builtin:cube")
+	comp(f) {top: t(0,0,-scope.sy) OuterSquare}
+
+OuterSquare -->
+	#TestGrid
+	#Stairs
+	Tank
+
+
+	
+Tank -->
+	alignScopeToAxes(y)
+	# Insert pre-made circle asset to assure circle works.
+	i("Tank/Circle01.obj")
+	# Cleanup ugly Obj model.
+	cleanupGeometry(edges, 0)
+	# We are now using circle model, not initial shape.
+	extrude(Height)
+	comp(f) {top: TankTop | side: TankSide}
+
+##################################################
+# Tank Top
+
+@Range("Dome","Cone")
+attr TankTopShape = "Dome"
+attr WalkWayWidth = StairWidth * 1.2
+const TankTopRadius = radius - WalkWayWidth
+attr TankTopHeight = TankTopRadius * 0.1
+
+TankTop -->
+	offset(-WalkWayWidth)
+	comp(f) {border: X. | inside: TankTopInside}
+	#TankGadgets
+
+TankTopInside -->
+	case TankTopShape == "Cone":
+		taper(TankTopHeight)
+	case TankTopShape == "Dome":
+		TankDome
+	else: X.
+
+TankSide -->
+	#TankSign
+	TankFace
+	#TankUpperRailingFrame
+	TankFoundation
+
+const angle32 = 360/32
+const angle64 = angle32/2
+const q = radius * sin(angle64)
+const faceWidth = q*2
+
+
+#TankSign -->
+	#t(0, 0,0.05)
+	#color(1, comp.index/comp.total, comp.index/comp.total)
+
+
+attr FoundationHeight = 1
+
+TankFoundation -->
+	split(y){FoundationHeight:
+		extrude(0.4) 
+		color(0.5,0.5,0.5) 
+		s('2,'1,'1)
+		center(x)
+		trim 
+		X.
+	}
+
+
+TankUpperRailingFrame -->
+	split(y){~1: NIL | StairFrameThickness:
+		extrude(0.2) 
+		s('2,'1,'1)
+		center(x)
+		trim
+		MetalTexture
+	}
+
+
+attr SignImage = "Tank/asheville_updated-01-darkwords.png" 
+#attr SignImage = "Tank/asheville_updated-01.png" 
+
+const hasSign = true
+const signFaceCount = 7
+const signFaceStartsAt = 17
+const signCenter = scope.sy / 2
+
+const signPixX = imageInfo( SignImage , sx)
+const signPixY = imageInfo( SignImage , sy)
+const signYPerX = signPixY / signPixX
+# From above calcs: faceWidth
+const signTotalWidth = faceWidth * signFaceCount 
+const signHeight = signTotalWidth * signYPerX
+
+@Hidden
+attr thisSignPart = 0
+
+const signSliceAmount = (100 / signFaceCount) / 100 
+thisSliceStart = thisSignPart * signSliceAmount
+thisSliceEnd = thisSliceStart + signSliceAmount
+
+TankFace --> 
+	case !hasSign:
+		TankFaceOutlined
+	else:
+		case comp.index >= signFaceStartsAt && comp.index <= (signFaceStartsAt + signFaceCount - 1):
+			set(thisSignPart, comp.index -signFaceStartsAt)
+			split(y){~1: TankFaceOutlined | signHeight: TankSign | '0.08:TankFaceOutlined} 			
+		else: TankFaceOutlined	
+
+TankFaceOutlined --> X.
+# XX Tank outlines removed for Jo Fraley demo.
+disconnectRule -->
+	offset(-0.02) #was .06
+	comp(f) {
+		border: color(0.6,0.6,0.6) X. |
+		inside: X.
+	}
+
+
+
+#TextureFace(imageFile, xStart, xEnd, yStart, yEnd, xRealWorldSize, yRealWorldSize)
+TankSign -->
+	ImagePatchXY.TextureFace(SignImage, thisSliceStart, thisSliceEnd, 0, 1, signTotalWidth, signHeight)
+
+TestSignOLD --> 
+#	color(1,0,0)
+	s('signFaceCount,'1,'1)
+	setupProjection(0, scope.xy, '1, '1)
+	projectUV(0)
+	texture("Tank/TankImageTest.jpg")
+
+# From manual calculations:
+steps = 10#Segments seen in section. CGA Splits = steps - 1 = 1 
+splits = steps - 1
+
+r = TankTopRadius
+h = TankTopHeight
+HH = sqrt(h*h + r*r)
+H = HH / 2
+R = 2*(H*H) / h
+base = (R - h)
+A = atan(r / base) 
+m = A / steps
+AComp = 90 - A 
+a(i) = AComp + (m * i)
+y(i) = R * sin(a(i))
+x(i) = R * cos(a(i))
+ylb(i) = y(i) - base
+j(i) = 
+	case i == 0: 0
+	else: ylb(i) - ylb(i-1)
+k(i) = x(i-1) - x(i) 
+angle(i) = atan(j(i) / k(i))
+
+TankDome -->
+	#DebugDome
+	DomeTaper(1)
+
+DomeTaper(i) -->
+	case i > steps:
+		X.
+	else:
+		DomeLayer(angle(i),j(i))
+		t(0,0,j(i))
+		s(x(i)*2,x(i)*2,0)
+		center(xy)
+		DomeTaper(i+1) 
+
+DomeLayer(angle, j) -->
+	roofPyramid(angle)
+	split(y) {j: DomeFace}
+
+DomeFace --> X.
+discDome --> ## XX disconnected
+	offset(-0.02)
+	comp(f) {
+		border: color(0.6,0.6,0.6) X. |
+		inside: X. #AddDirtMapRotate #XX Dirtmap removed
+	}
+
+#	color(rand,rand,rand)
+#AddDirtMapRotate
+
+
+########################################
+
+attr metalTexture = "AlaskaMaterials/Diamond_grey.jpg"
+attr MetalScaleX = 1
+attr MetalScaleY = 1
+MetalTexture -->
+	comp(f) {all:
+		color(1,1,1)
+		alignScopeToGeometry(zUp, any, world.lowest)  # This aligns to bottom of roof shape.
+		setupProjection(0, scope.xy, MetalScaleX, MetalScaleY)  # UV layer 0, projecting to XY plane, using your scale X/Y.
+		projectUV(0)  # Must do this after projection setup.
+		texture(metalTexture) # Apply chosen texture
+		X.
+	}
+############################################
+
+attr StairWidth = 3
+attr StairRun = 0.9
+attr StairRise = 0.5
+attr StairThickness = 0.1
+const radiusOuter = radius + StairWidth
+const stairRotation = atan( StairRun / radiusOuter) 
+
+Stairs -->
+	# Make single step from OuterSquare.
+	s(StairRun, StairWidth, 0)
+	# Move to center of grid.
+	t(radius, radius, 0)
+	# Recursion.
+	MakeStairs(0)
+	
+
+MakeStairs(index) -->
+	case (StairRise * (index))+1 > Height:
+		UpperLanding
+		TankRailings(0)
+	else:
+		r(0,0,stairRotation) 
+		t(0,0, StairRise)
+		MoveStairOut(index)
+		MakeStairs(index + 1)
+		
+MoveStairOut(index) -->
+	t(0, radius, 0)
+	extrude(-StairThickness)
+	MakeHandrail
+	MakeOuterStairFrame
+	MakeBalluster(index)
+
+#######################################################
+
+
+totalStairRotations = (360 / stairRotation)
+
+TankRailings(index) -->
+	case index > (totalStairRotations - 6):
+		NIL
+	else:
+		r(0,0, (case index == 0: (stairRotation * 5) else: stairRotation))
+		TankRailings(index + 1) 
+		t(0, radius, 0)
+		TankRailingDetails
+		
+TankRailingDetails -->
+	TankRailingRail
+	TankRailingBalluster
+	
+TankRailingRail -->
+	split(y) {HandrailWidth: 
+		t(0,0, UHandrailHeight - HandrailThickness) 
+		extrude(HandrailThickness)
+		MetalTexture
+	}
+
+
+TankRailingBalluster -->
+	split(y) {BallusterWidth: 
+		split(x) {~1: NIL | BallusterWidth: TankRailingBalluster2 | ~1: NIL}}
+	
+	#t(-StairRun * 3,0,0)
+	#s('4,'1,'1)
+	#extrude(-StairThickness)
+#		r(0,0,stairRotation) 
+#		t(0,0, StairRise)
+#		MoveStairOut(index)
+#		MakeStairs(index + 1)
+
+TankRailingBalluster2 --> 
+	extrude(UHandrailHeight)
+	#t(0,0,-BallusterWidth)
+	MetalTexture
+
+
+
+#######################################################
+
+UpperLanding -->
+	r(0,0,stairRotation) 
+	t(0, radius, 0)
+	t(-StairRun * 3,0,0)
+	s('4,'1,'1)
+	extrude(-StairThickness)
+	UpperLandingDetails
+
+UpperLandingDetails -->
+	UMakeOuterStairFrame
+	UMakeHandrail1
+	UMakeHandrail2
+	UMakeBallusters1
+	UMakeBallusters2
+	
+UMakeBallusters1 -->
+	split(z) {BallusterWidth: UMakeBallusters1A}
+UMakeBallusters1A -->
+	split(x) {
+		~(StairRun-(BallusterWidth/2)): NIL |
+		{BallusterWidth: UMakeBallusters1B | (StairRun-BallusterWidth): NIL}*
+#		~(StairRun-(BallusterWidth/2)): NIL
+	}
+UMakeBallusters1B --> 
+	s('1, UHandrailHeight + HandrailThickness, '1)
+	t(0,0,-BallusterWidth)
+	MetalTexture
+
+UMakeBallusters2 -->
+	split(x) {BallusterWidth: UMakeBallusters2A}
+UMakeBallusters2A -->
+	split(z) {
+		~(StairRun * 0.5): NIL |
+		{BallusterWidth: UMakeBallusters2B | (StairRun-BallusterWidth): NIL}*
+	}
+UMakeBallusters2B --> 
+	s('1, UHandrailHeight + HandrailThickness, '1)
+	t(-BallusterWidth,0,0)
+	MetalTexture
+
+
+/*	 
+UMakeHandrail2 --> 
+	split(x) {HandrailWidth:
+		split(z) {HandrailWidth: NIL | ~1: UMoveHandrailUp}}
+UMoveHandrailUp -->
+	t(0, UHandrailHeight, 0)
+	MetalTexture
+*/
+
+
+UMakeHandrail1 --> 
+	split(z) {HandrailWidth: UMoveHandrailUp} 
+UMakeHandrail2 --> 
+	split(x) {HandrailWidth:
+		split(z) {HandrailWidth: NIL | ~1: UMoveHandrailUp}}
+UMoveHandrailUp -->
+	t(0, UHandrailHeight, 0)
+	MetalTexture
+
+UMakeOuterStairFrame --> split(z) {StairFrameWidth: UMakeOuterStairFrame2 | ~1: UMakeOuterStairFrame3}
+UMakeOuterStairFrame2 -->
+	s('1,StairFrameThickness,'1) 
+	MetalTexture
+UMakeOuterStairFrame3 -->
+	split(x) {StairFrameWidth: UMakeOuterStairFrame4 | ~1: MetalTexture}
+UMakeOuterStairFrame4 -->
+	s('1,StairFrameThickness,'1) 
+	MetalTexture
+
+
+#UMakeBalluster2 --> split(z) {StairFrameWidth: MakeBalluster3 }
+#UMakeBalluster3 --> split(x) {~1: NIL | BallusterWidth: MakeBalluster4 | ~1: NIL}
+#UMakeBalluster4 --> 
+TEMP -->
+	t(0, 0, -BallusterWidth)
+	s('1,'1,BallusterWidth)
+	t(0, -(StairRise - BallusterWidth)/2 , 0)
+	s('1, HandrailHeight + StairFrameThickness, '1)
+	MetalTexture
+
+
+
+
+
+attr BallusterEveryCount = 1
+
+MakeBalluster(index) -->
+	case index % BallusterEveryCount == 0:
+		MakeBalluster2
+	else:
+		NIL
+
+attr BallusterWidth = HandrailWidth / 2
+
+MakeBalluster2 --> split(z) {StairFrameWidth: MakeBalluster3 }
+MakeBalluster3 --> split(x) {~1: NIL | BallusterWidth: MakeBalluster4 | ~1: NIL}
+MakeBalluster4 --> 
+	t(0, 0, -BallusterWidth)
+	s('1,'1,BallusterWidth)
+	t(0, -(StairRise - BallusterWidth)/2 , 0)
+	s('1, HandrailHeight + StairFrameThickness, '1)
+	MetalTexture
+
+
+	
+#	comp(f) {top: 
+#		roofShed(handRailAngle,1) 
+#		comp(f) {2: extrude(world.y, StairFrameThickness) X.}
+#	}
+
+
+
+
+
+
+
+
+
+
+
+attr StairFrameWidth = HandrailWidth / 3
+attr StairFrameThickness = StairRise + StairThickness
+MakeOuterStairFrame --> split(z) {StairFrameWidth: MakeOuterStairFrame2 | ~1: MetalTexture}
+
+MakeOuterStairFrame2 -->
+	t(0, -StairFrameThickness, 0)
+	comp(f) {top: 
+		roofShed(handRailAngle,1) 
+		comp(f) {2: extrude(world.y, StairFrameThickness) MetalTexture}
+	}
+
+	
+MakeHandrail --> split(z) {HandrailWidth: MoveHandrailUp}
+
+const handRailAngle = atan(StairRise / StairRun)
+attr HandrailHeight = 3
+attr HandrailWidth = 0.25
+attr HandrailThickness = HandrailWidth / 3
+	
+MoveHandrailUp -->
+	t(0, HandrailHeight, 0)
+	comp(f) {top: 
+		roofShed(handRailAngle,1) 
+		comp(f) {2: extrude(HandrailThickness) MetalTexture}
+	}
+
+const UHandrailHeight = HandrailHeight + StairRise + HandrailThickness
+
+######################################
+# FOR TESTING
+
+TestGrid -->
+	set(material.opacity,0.5)	
+	split(x){'0.5: R1| '0.5: G1}
+R1-->
+	split(y){'0.5: G| '0.5: RR}
+G1-->
+	split(y){'0.5: RR| '0.5: G}
+	
+RR--> color(1,0,0)
+G--> color(0,1,0)
+	
+# General math:
+#convertSqMetersToSqFeet(squareMetersInArea) = squareMetersInArea * sqFeetPerSqMeters
+#convertMetersToFeet(meters) = meters / metersPerFoot
+#convertFeetToMeters(feet) = feet * metersPerFoot
+#const sqFeetPerSqMeters = 10.764
+#const metersPerFoot = 0.3048
+#const sqFeetPerAcre = 43560
+	
+	
+	
+#########################################
+
+DebugDome --> 	
+	print("#########################")
+	print(r)
+	print(h)
+	print(HH)
+	print(H)
+	print(R)
+	print(A)
+	print(m)
+	print("---------------")
+	print(AComp)
+	print(a(0))
+	print(a(1))
+	print(a(2))
+	print(a(3))
+	print("---------------")
+	print(y(0))
+	print(y(1))
+	print(y(2))
+	print(y(3))
+	print("----------ylb-----")
+	print(ylb(0))
+	print(ylb(1))
+	print(ylb(2))
+	print(ylb(3))
+	print("---------------")
+	print(k(0))
+	print(k(1))
+	print(k(2))
+	print(k(3))
+	print("----angle-----------")
+	print(angle(0))
+	print(angle(1))
+	print(angle(2))
+	print(angle(3))
+	NIL
+	
+	
+	
+dirtmapTexture = fileRandom("assets/DirtMap/Dirt*.jpg")
+	
+AddDirtMap -->
+	alignScopeToGeometry(yUp, any, world.lowest)
+	setupProjection(2,scope.xz,'1,'1)
+	projectUV(2)
+	set(material.dirtmap, dirtmapTexture)
+	
+AddDirtMapRotate -->
+	alignScopeToGeometry(yUp, any, world.lowest)
+	rotateScope(0,rand(360),0)
+	setupProjection(2,scope.xz,'1,'1)
+	projectUV(2)
+	set(material.dirtmap, dirtmapTexture)		

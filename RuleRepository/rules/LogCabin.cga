@@ -1,0 +1,788 @@
+/**
+ * File:    CabinV2.cga
+ * Created: 27 Jan 2014 17:53:08 GMT
+ * Author:  chri7180
+ */
+
+version "2019.1"
+
+const assetPath = "Cabin/"
+
+###################################################
+
+@Group("Cabin",1) @Order(2)
+@Range(3,10)
+attr Height_to_Roof = 3
+
+@Group("Cabin") @Order(1)
+@Range(1,4)
+attr Face_of_Front_Door = 1
+
+@Group("Cabin") @Order(4)
+@Range(0,120)
+attr Dutch_Door_Angle = 90
+
+@Group("Cabin") @Order(3)
+@Range(0.5,3)
+attr Foundation_Height = 0.25
+
+@Group("Cabin") @Order(5)
+@Range(0.5,3)
+attr Facade_Scale = 1
+
+@Group("Roof",2) @Order(1)
+@Range(10,60)
+attr Roof_Angle = 25
+
+# For texture scaling.
+@Group("Roof") @Order(4)
+@Range(0.5,3)
+attr Roof_Scale = 1
+
+# Overhang at eave side.
+@Group("Roof") @Order(3)
+@Range(0.25,1)
+attr Eave_Overhang = 0.5
+
+# Overhang on gable side.
+@Group("Roof") @Order(2)
+@Range(0.25,1)
+attr Rake_Overhang = 0.5 
+
+
+@Group("Windows",3) @Order()
+@Color
+attr Window_Color = "#b0d1df"
+
+@Group("Windows") @Order()
+@Range(0,1)
+attr Window_Transparency = 0.5
+
+@Group("Windows") @Order()
+@Color
+attr Trim_Color = "#f4cbab"
+
+@Group("Windows") @Order()
+@Range(0.04,0.08)
+attr Window_Trim_Thickness = 0.06
+
+
+@Group("Front Porch",4) @Order(0)
+@Range(0.8,1.4)
+attr Front_Door_Width = 1.2
+
+@Group("Front Porch",4) @Order(2)
+@Range(1.9,4.1)
+attr Front_Porch_Depth = 2
+
+@Group("Front Porch") @Order(1)
+@Range(2.1,5.1)
+attr Front_Porch_Width = 3
+
+@Group("Front Porch") @Order(3)
+@Color
+attr Front_Porch_Slab_Color = "#808080"
+const FrontPorchSlabThickness = 0.1
+
+@Group("Details",5) @Order(3)
+attr Fire_Burning = true
+
+@Group("Details",5) @Order(1)
+
+
+attr Chimney_Width = 1.2
+
+
+@StartRule
+Cabin -->
+	# Make sure scope is yUp.
+	alignScopeToAxes(y)
+	# Squash scope in y direction in case shape is not flat with world.
+	s('1,0,'1)
+	# Save starting elevation for later.	
+	set(startElevation, scope.elevation)
+	# Reduce shape to best fitting rectangle.
+	innerRect
+	# Extrude updards to form walls and base of roof.
+	extrude(Height_to_Roof)
+	# Separate faces, send vertical faces to wall texturing, 
+	#  and send top to roof code. 
+	comp(f) {
+		vertical: NIL | #Wall is now called from Chimney code, from bottom selector below. 
+		top: Roof | 
+		bottom: ChimneyStarter Floor Foundation}
+
+@Hidden
+attr startElevation = 0
+
+#Fix min floor to roof height and don't allow user to set beneath that.
+const Height_to_Roof_Adjusted =
+	case Height_to_Roof < Height_to_Roof_Min : Height_to_Roof_Min
+	else: Height_to_Roof		
+
+const Height_to_Roof_Min  = 3
+
+###################################################
+# FLOOR
+
+Floor -->
+	setupProjection(0, scope.xy, Floor_Scale, Floor_Scale, 0, 0) 
+	projectUV(0)
+	texture(Floor_Texture)
+
+const Floor_Texture = assetPath + "Wood1.jpg"
+const Floor_Scale = Facade_Scale
+
+Foundation -->
+	extrude(Foundation_Height)
+	comp(f) {
+		vertical: FoundationWall |
+		all: NIL
+	}
+
+FoundationWall -->
+	setupProjection(0, scope.xy, Floor_Scale, Floor_Scale, 0, 0) 
+	projectUV(0)
+	texture(Foundation_Texture)
+
+const Foundation_Texture = Chimney_Texture
+
+############################################
+# CHIMNEY START
+
+ChimneyStarter -->
+	# Create form of gable with no overhangs.
+	roofGable(Roof_Angle, 0, 0)
+	ChimneyStarterStep2
+
+ChimneyStarterStep2 -->
+	# Save height of roof for use in downstream rules.
+	set(heightOfGableRoof, scope.sy)
+	ChimneyStarterStep3
+
+ChimneyStarterStep3 -->	
+	comp(f) {horizontal: ChimneyStarterStep4}
+
+ChimneyStarterStep4 -->
+	extrude(Height_to_Roof)
+	comp(f) {vertical: Wall }
+
+
+############################################
+# ROOF
+
+# Save height of roof for use in downstream rules.
+@Hidden
+attr heightOfGableRoof = 0
+
+Roof -->
+	# Create form of gable.
+	roofGable(Roof_Angle, Eave_Overhang , Rake_Overhang )
+	# Save height of roof for use in downstream rules.
+	set(heightOfGableRoof, scope.sz)
+	# Separate faces of roof gable object, as follows:
+	comp(f) {vertical: RoofWall		# Handle gable end vertical same as wall, but no windows for now.
+		| horizontal: Ceiling			# Remove attic floor, because it is not needed. 
+		| all: RoofTop					# Send roof to texturing.
+	}
+
+
+
+#############
+
+RoofWall -->
+	setupProjection(0, scope.xy, RoofWall_Scale, RoofWall_Scale, 0, -Height_to_Roof) 
+	projectUV(0)
+	texture(RoofWall_Texture)
+	X.
+
+const RoofWall_Scale = Facade_Scale
+const RoofWall_Texture = Facade_Texture
+
+
+
+RoofTop -->
+	setupProjection(0, scope.xy, Roof_Scale, Roof_Scale, 0, 0) 
+	projectUV(0)
+	texture(Roof_Texture)
+	extrude(world.y, Roof_Thickness)
+	X.
+
+const Roof_Texture = assetPath + "Shingles.jpg"
+const Roof_Thickness = 0.1
+
+
+
+###################################################
+# CEILING
+
+Ceiling --> 
+	# Project ceiling texture.
+	setupProjection(0, scope.xy, Ceiling_Scale, Floor_Scale, 0, 0) 
+	projectUV(0)
+	texture(Ceiling_Texture)
+	X.
+
+const Ceiling_Scale = Floor_Scale
+const Ceiling_Texture = Floor_Texture
+
+###################################################
+# WALL
+
+
+
+Wall -->
+	# Project wall texture onto each wall.
+	setupProjection(0, scope.xy, Facade_Scale, Facade_Scale, 0, 0) 
+	projectUV(0)
+	texture(Facade_Texture)
+	# Handle details of windows, doors, chimney, etc.
+	WallDetails
+
+const Facade_Texture = assetPath + "LogCabinFacade.jpg"
+	
+WallDetails -->
+	case comp.index == faceOfFrontDoorAdjusted:
+		WallWithFrontDoor
+	case comp.index == (faceOfFrontDoorAdjusted - 2) ||  comp.index == (faceOfFrontDoorAdjusted + 2):
+		WallWithChimney
+	else:
+		WallWithWindows
+
+chimneyIsTall = ((faceOfFrontDoorAdjusted % 2) == 0)
+
+faceOfFrontDoorAdjusted =  
+	case Face_of_Front_Door < 1: 0
+	case Face_of_Front_Door > 4: 3
+	else: Face_of_Front_Door - 1
+	
+	
+#Face_of_Front_Door - 1
+	
+WallWithChimney -->
+	split(x) {
+		minWallSizeAtCorner: WallEnd | 
+		windowBaysAroundChimney: WindowBays |
+		minWallSizeAtEdge: WallEnd |
+	 	Chimney_Width : Chimney |
+		minWallSizeAtEdge: WallEnd |
+		windowBaysAroundChimney: WindowBays |
+		minWallSizeAtCorner: WallEnd  
+	}
+
+windowBaysAroundChimney = (scope.sx - Chimney_Width - (minWallSizeAtCorner * 2) - (minWallSizeAtEdge * 2)) / 2
+
+	
+WallWithFrontDoor -->
+	FrontPorch
+	split(x) {
+		minWallSizeAtCorner: WallEnd | 
+		windowBaysAroundFrontDoor: WindowBays |
+		minWallSizeAtEdge: WallEnd |
+	 	Front_Porch_Width : FrontDoorWall |
+		minWallSizeAtEdge: WallEnd |
+		windowBaysAroundFrontDoor: WindowBays |
+		minWallSizeAtCorner: WallEnd  
+	}
+ 		
+windowBaysAroundFrontDoor = (scope.sx - Front_Porch_Width - (minWallSizeAtCorner * 2) - (minWallSizeAtEdge * 2)) / 2
+
+
+WallEnd --> WallEnd.	
+
+
+
+
+
+
+
+#############################################################
+# FRONT DOOR
+
+FrontDoorWall -->
+	split(x) {
+		wallSizeAroundFrontDoor: WallEnd |
+		Front_Door_Width : FrontDoorWallStep2 |
+		wallSizeAroundFrontDoor: WallEnd
+	}
+	
+FrontDoorWallStep2 -->	
+	split(y) {
+ 		Front_Door_Height : FrontDoorRoughOpening |
+		Rough_Opening_To_Ceiling_Height:  WallEnd
+	}
+
+wallSizeAroundFrontDoor = (scope.sx - Front_Door_Width) / 2 
+
+const Front_Door_Height = 2.2
+const Rough_Opening_To_Ceiling_Height = Height_to_Roof - Front_Door_Height
+const Window_Height = Front_Door_Height - Floor_To_Window
+const Floor_To_Window = 1
+
+FrontDoorRoughOpening -->
+	texture("")
+	offset(-Window_Trim_Thickness)
+	comp(f) { inside: FrontDoor | border: FrontDoorTrim }
+
+FrontDoorTrim -->
+	color(Trim_Color)
+	translate(rel, scope, 0, 0, Window_Trim_Depth / 2)
+	extrude(-Window_Trim_Depth)
+	X.
+	
+FrontDoor --> 
+	color(Trim_Color)
+	split(y) {
+		Floor_To_Window : FrontDoorBottom |
+		Window_Trim_Thickness : FrontDoorWaist |
+		(scope.sy - Floor_To_Window - Window_Trim_Thickness) : FrontDoorTop
+	}
+	
+
+FrontDoorTop -->
+	rotate(rel, scope, 0, Dutch_Door_Angle , 0)
+	FrontDoorTopStep2
+
+FrontDoorTopStep2 -->
+	offset(-Door_Panel_Thickness)
+	comp(f) { inside: FrontDoorWindow | border: FrontDoorBorder }
+
+const Door_Panel_Thickness = 0.14
+
+FrontDoorWaist -->
+	translate(rel, scope, 0, 0, (Front_Door_Thickness * 1.5) / 2)
+	extrude(-Front_Door_Thickness * 1.5)
+	
+
+FrontDoorBottom -->
+	offset(-Door_Panel_Thickness)
+	comp(f) { inside: FrontDoorBottomInside | border: FrontDoorBorder }
+
+FrontDoorWindow -->
+	WindowPane
+	FrontDoorWindowCrossX
+	FrontDoorWindowCrossY
+
+FrontDoorWindowCrossX -->
+	split(x) {
+		((scope.sx - DoorWindowCrossThickness) / 2): NIL |  
+		DoorWindowCrossThickness : FrontDoorWindowCrossBoth |
+		((scope.sx - DoorWindowCrossThickness) / 2): NIL  
+	}
+	
+FrontDoorWindowCrossY -->
+	split(y) {
+		((scope.sy - DoorWindowCrossThickness) / 2): NIL |  
+		DoorWindowCrossThickness : FrontDoorWindowCrossBoth |
+		((scope.sy - DoorWindowCrossThickness) / 2): NIL  
+	}
+
+const DoorWindowCrossThickness = Front_Door_Thickness / 2
+
+FrontDoorWindowCrossBoth -->
+	translate(rel, scope, 0, 0, (DoorWindowCrossThickness) / 2)
+	extrude(-DoorWindowCrossThickness)
+
+
+
+FrontDoorBorder -->
+	translate(rel, scope, 0, 0, Front_Door_Thickness / 2)
+	extrude(-Front_Door_Thickness)
+
+FrontDoorBottomInside -->
+	X.
+
+const Front_Door_Thickness = Window_Trim_Depth / 2
+
+###############################################
+# FRONT PORCH
+
+
+FrontPorch -->
+	extrude(Front_Porch_Depth)
+	comp(f) {
+		world.down: FrontPorchFloor 
+	}
+
+FrontPorchFloor -->
+	texture("")
+	split(x) { 
+		((scope.sx - Front_Porch_Width) / 2) : NIL |
+		Front_Porch_Width : FrontPorchComponents | 
+		((scope.sx - Front_Porch_Width) / 2) : NIL
+	}
+
+FrontPorchComponents -->
+	FrontPorchRoof
+	FrontPorchSlab
+	NIL
+
+
+FrontPorchRoof -->
+	translate(rel, world, 0, bottomOfFrontPorchRoof, 0)
+	reverseNormals  #XX
+	roofShed(10,2) # Need more info from Zurich about when this can fail.
+	FrontPorchRoofComponents
+	
+const bottomOfFrontPorchRoof = (Front_Door_Height + 0.05) 
+
+FrontPorchRoofComponents -->
+	comp(f) {
+		object.top: FrontPorchRoofTop
+	}
+
+FrontPorchRoofTop -->
+	setupProjection(0, scope.xy, Roof_Scale, Roof_Scale, 0, 0) 
+	projectUV(0)
+	texture(Roof_Texture)
+	extrude(world.y, Roof_Thickness)
+	X.
+
+
+const Lumber_Thickness = 0.1
+
+
+FrontPorchSlab -->
+	FrontPorchSlabStub	# Save shape to work from later in model.
+	color(Front_Porch_Slab_Color)
+	extrude(FrontPorchSlabThickness)
+	X.
+
+FrontPorchFoundation -->
+	translate(rel, world, 0, -FrontPorchSlabThickness, 0)
+	split(x) {
+		Lumber_Thickness: NIL |
+		(Front_Porch_Width - (Lumber_Thickness * 2)): FrontPorchFoundationPart2 |
+		Lumber_Thickness: NIL
+	}
+
+FrontPorchFoundationPart2 -->
+	split(y) {
+		(Front_Porch_Depth - Lumber_Thickness): FrontPorchFoundationPart3 |
+		Lumber_Thickness: NIL
+	}
+
+FrontPorchFoundationPart3 -->
+	extrude(Foundation_Height - FrontPorchSlabThickness)
+	comp(f) {world.up : NIL | world.down: NIL | all: FoundationWall}
+
+############################################
+# Use for further development of the porch:
+FrontPorchSlabStub -->
+	FrontPorchFoundation
+	FrontPorchDetails
+	NIL
+
+
+############
+
+FrontPorchDetails -->
+	color(Trim_Color)
+	reverseNormals
+	split(x) {
+		Lumber_Thickness: NIL |
+		Lumber_Thickness: FrontPorchShedRoofCap FrontSideColumnsAndRailing |
+		spaceBetweenFrontCornerColumnsAndStairs: FrontRailingAndHalfColumn(true) | 
+		Stair_Width: Front_Stairs |
+		spaceBetweenFrontCornerColumnsAndStairs: FrontRailingAndHalfColumn(false) | 
+		Lumber_Thickness: FrontPorchShedRoofCap FrontSideColumnsAndRailing | 
+		Lumber_Thickness: NIL
+	}
+
+const Stair_Width = Front_Door_Width
+spaceBetweenFrontCornerColumnsAndStairs = (Front_Porch_Width - Stair_Width - (Lumber_Thickness * 4))/2
+
+##########
+
+FrontPorchShedRoofCap -->
+	translate(rel, world, 0, bottomOfFrontPorchRoof, 0)
+	roofShed(10,2) # Need more info from Zurich about when this can fail.
+
+FrontSideColumnsAndRailing -->
+	split(y) {
+		Lumber_Thickness: CornerColumn |
+		(Front_Porch_Depth - (Lumber_Thickness * 3)): FrontSideRailing |  	
+		Lumber_Thickness: CornerColumn |
+		Lumber_Thickness: NIL
+	}
+
+FrontSideRailing -->
+	extrude(Lumber_Thickness)
+	translate(rel, world, 0, (Floor_To_Window - Lumber_Thickness), 0)
+
+CornerColumn -->
+	extrude(bottomOfFrontPorchRoof)
+
+#########
+
+FrontRailingAndHalfColumn(leftSide) -->
+	split(y) {
+		(Front_Porch_Depth - (Lumber_Thickness * 2)): NIL |  	
+		Lumber_Thickness: FrontRailingAndHalfColumnStep2(leftSide) |
+		Lumber_Thickness: NIL
+	}
+	
+FrontRailingAndHalfColumnStep2(leftSide) -->
+	case leftSide:
+		split(x) {
+			(spaceBetweenFrontCornerColumnsAndStairs - Lumber_Thickness): FrontRailing |
+			Lumber_Thickness: FrontHalfColumn
+		}
+	else:
+		split(x) {
+			Lumber_Thickness: FrontHalfColumn | 
+			(spaceBetweenFrontCornerColumnsAndStairs - Lumber_Thickness): FrontRailing
+		}
+
+FrontRailing -->
+	extrude(Lumber_Thickness)
+	translate(rel, world, 0, (Floor_To_Window - Lumber_Thickness), 0)
+	
+FrontHalfColumn -->
+	extrude(Floor_To_Window)
+
+
+	
+####################################
+# STAIRS
+
+Front_Stairs -->
+	#color(1,0,0)
+	Front_Stairs2
+
+Front_Stairs2 -->
+	translate(rel, scope, 0, Front_Porch_Depth, 0)
+	# Stopped Stair development here.
+	NIL
+
+###############################################
+# WINDOW/WALL PLACEMENT
+
+
+
+
+
+WallWithWindows -->
+	split(x) {
+		minWallSizeAtCorner: WallEnd | 
+		(scope.sx - (minWallSizeAtCorner * 2)): WindowBays | 
+		minWallSizeAtCorner: WallEnd
+	}
+	
+const minWallSizeAtEdge = 0.3
+const minWallSizeAtCorner = 0.8
+const Window_Width = Front_Door_Width #FIX: this should be attr, maybe.
+	
+
+WindowBays -->
+	split(y) {
+		Floor_To_Window : WallEnd |
+ 		Window_Height : WindowBaysRecursive |
+		Rough_Opening_To_Ceiling_Height:  WallEnd
+	}
+
+WindowBaysRecursive -->
+	case scope.sx > (Window_Width * 4):
+		set(tempRand, rand(0,(Window_Width * 2.5)))
+		split(x) {
+			tempRand : WindowBaysRecursive |
+			(scope.sx - tempRand): WindowBaysRecursive
+		}
+	else: #case scope.sx <= (Window_Width * 4):
+		WindowBaysRecursiveEnd
+
+@Hidden
+attr tempRand = 0
+
+WindowBaysRecursiveEnd -->
+	case scope.sx > (Window_Width * 2):
+		# Big enough for double window.
+		20%: WallEnd
+		else:
+			split(x) {
+				(scope.sx - (Window_Width * 2)) : WallEnd |
+				Window_Width : WindowRoughOpening | 
+				Window_Width : WindowRoughOpening |
+				(scope.sx - (Window_Width * 2)) : WallEnd
+			}
+	case scope.sx > Window_Width:
+		# Big enough for single window.
+		40%: WallEnd
+		else:
+			split(x) {
+				(scope.sx - Window_Width) : WallEnd |
+				Window_Width : WindowRoughOpening | 
+				(scope.sx - Window_Width) : WallEnd
+			}
+	else: # No Window
+		WallEnd
+
+############################################
+# WINDOWS
+
+
+WindowRoughOpening -->
+	texture("")
+	offset(-Window_Trim_Thickness)
+	comp(f) { inside: WindowPane | border: WindowTrim }
+
+
+WindowTrim -->
+	color(Trim_Color)
+	translate(rel, scope, 0, 0, Window_Trim_Depth / 2)
+	extrude(-Window_Trim_Depth)
+	X.
+
+const Window_Trim_Depth = 0.08
+	
+WindowPane --> 
+	color(Window_Color)
+	set(material.opacity, 1 - Window_Transparency)
+	X.
+
+
+##################################################
+# CHIMNEY
+
+
+
+Chimney --> 
+	extrude(Chimney_Depth_Total)
+	comp(f) {
+		world.down: ChimneyBottom
+	}
+
+
+
+ChimneyBottom -->
+	# Move back into cabin.
+	translate(rel, scope, 0, -Chimney_Depth_Interior,0)
+	# Move to foundation start elevation.
+	translate(rel, scope, 0, 0, Foundation_Height)
+	# Extrude upwards.
+	extrude(-Chimney_Height)
+	# Separate faces for texturing Chimney.
+	comp(f) {
+		1: ChimneyTop |
+		2: ChimneyInterior | 
+		3: ChimneyTexture |
+		4: ChimneyTexture |
+		5: ChimneyTexture
+	}
+
+	
+ChimneyInterior-->
+	split(y) {
+		Foundation_Height: NIL | 
+		Chimney_Hearth_Height: ChimneyHearth |
+		Fireplace_Height : Fireplace |
+		(Chimney_Height - Foundation_Height - Fireplace_Height): ChimneyTexture 
+	}
+	#color(1,0,0) huh.
+
+const Chimney_Hearth_Height = 0.1 
+const Chimney_Hearth_Depth = 0.5
+const Fireplace_Height = 0.6 
+const Fireplace_Ratio_To_Chimney = 0.6 
+
+ChimneyHearth -->
+	extrude(Chimney_Hearth_Depth)
+	comp(f) {all: ChimneyTexture} 
+
+Fireplace -->
+	split(x) {
+		(Chimney_Width * 0.2) : ChimneyTexture | 
+		(Chimney_Width * 0.6) : FireplaceStep2 | 
+		(Chimney_Width * 0.2) : ChimneyTexture
+	}
+
+FireplaceStep2 -->
+	color(0.2,0.2,0.2)
+	extrude(-Chimney_Depth_Total + 0.1) 
+	comp(f) {
+	 	0: Fire |  
+		all: ChimneyTexture 
+	}
+
+Fire -->
+	case Fire_Burning:
+		color(1,1,1)
+		translate(rel, scope, 0, 0, -0.25)
+		setupProjection(0, scope.xy, (Chimney_Width * 0.6), (Chimney_Width), 0, 0) 
+		projectUV(0)
+		texture(Fire_Texture)
+		Fire.
+	else:
+		NIL
+
+
+const Fire_Texture = assetPath + "Fireplace2.png"
+
+
+
+
+
+
+Chimney_Height = 
+	case (chimneyIsTall): (Foundation_Height + Height_to_Roof + heightOfGableRoof + Chimney_Top_Extension)
+	else: (Foundation_Height + Height_to_Roof + (heightOfGableRoof / 3) + Chimney_Top_Extension)
+
+const Chimney_Depth_Total = 1.25
+const Chimney_Depth_Interior = 0.25
+const Chimney_Top_Extension = 0.6
+
+ChimneyTexture -->
+	setupProjection(0, scope.xy, RoofWall_Scale, RoofWall_Scale, 0, -Height_to_Roof) 
+	projectUV(0)
+	texture(Chimney_Texture)
+
+const Chimney_Texture = assetPath + "RockFacade.jpg"
+
+ChimneyTop -->
+	ChimneyTexture
+	ChimneyFlue
+	ChimneyFlueTopper
+
+
+ChimneyFlue -->
+	split(x) {
+		'0.33: NIL | 
+		'0.34: 	split(y) {
+			'0.33: NIL | 
+			'0.34: ChimneyFlueStep2 |
+			'0.33: NIL
+		} |
+		'0.33: NIL
+	}	
+
+ChimneyFlueStep2 -->
+	extrude(Flue_Extension) color("#120800") ChimneyFlueStep2.
+
+ChimneyFlueTopper-->
+	split(x) {
+		'0.2: NIL | 
+		'0.6: 	split(y) {
+			'0.2: NIL | 
+			'0.6: ChimneyFlueTopperStep2 |
+			'0.2: NIL
+		} |
+		'0.2: NIL
+	}
+
+ChimneyFlueTopperStep2 --> 
+	translate(rel, world, 0, Flue_Extension, 0)
+	taper(0.2)
+
+const Flue_Extension = 0.15
+
+
+
+
+
+
+
+
+
+
+
+	

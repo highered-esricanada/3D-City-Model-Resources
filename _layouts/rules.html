@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1, IE=edge">
+  <meta property="ce:viewerversion" content="4.1.0.201604040532_">
+  <link rel="shortcut icon" type="image/x-icon" href="../../css/images/favicon.ico">
+  <title></title>
+  <link rel="stylesheet" type="text/css" href="../../css/rules.css">
+  <script src="../../js/rules.js"></script>
+  <style>
+    #container{
+      right: 0px !important;
+      left: 50% !important;
+    }
+    
+    #helpFrame{
+      left: 50%;
+      width: 50%;
+      position: absolute;
+      height: 100%;
+      display: block;
+      top: 0; 
+    }
+
+    #titleLink, #topLinks, .fullScreenButton{
+      display:none		
+    }
+  </style>
+    
+
+  <script type="text/javascript">
+    var editor;
+    var tokens = []
+    require(["dojo/request/xhr","dojo/_base/lang","dojo/domReady!"], function(xhr, lang){
+      lang.hitch(this, xhr("../../RuleRepository/rules/{{page.Name}}.cga", {
+          handleAs: "text"
+        }).then(function(data){
+            this.editor.setValue(data);
+            var lineCount  = this.editor.lineCount();
+              for (var i = 1 ; i <= lineCount; i++){
+                this.tokens.push(this.editor.getLineTokens(i, true));
+              }
+        }, function(err){
+      }));
+      //history.replaceState(null, null, '?3dWebScene={{ site.baseurl }}/RuleRepository/models/{{team.name}}.3ws');
+      initEditor();
+    });
+  </script>
+
+  <body>
+    <!--iframe src="http://cehelp.esri.com/help/index.jsp?topic=/com.procedural.cityengine.help/html/toc.html" id = "helpFrame"/-->
+    <iframe src="../../help.html" id = "helpFrame"/>
+  </body>
+</html>

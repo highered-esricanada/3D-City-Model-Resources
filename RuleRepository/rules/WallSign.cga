@@ -1,0 +1,57 @@
+/**
+ * File:    WallSign.cga
+ * Created: 10 Jul 2015 23:16:43 GMT
+ * Author:  chri7180
+ */
+
+version "2015.1"
+
+# Direction is extension from side of wall.
+# You can read it best at +/- 90 degrees. 
+@Range(0,360)
+attr Direction = 0
+@Range(0.381,0.457)
+attr SignHeight = 0.4
+
+@Range(1.82,2.43)
+attr SignMountHeight = 1.82
+@File
+attr SignImage = "WallSign/Defibulator.jpg"
+attr ShowWall = false
+
+const signThickness = 0.01
+const signWidthPerHeight = imageInfo(SignImage,sx) / imageInfo(SignImage,sy)
+const signWidth = SignHeight * signWidthPerHeight  
+const signEdgeColor = "#101010"
+
+@StartRule @InPoint
+FixedPivotPoint -->
+	alignScopeToAxes(y)
+	rotate(abs, world, 0, -Direction-90, 0)
+	s(1,0,1)
+	center(xz)
+	i("builtin:cube")
+	comp(f){top: t(0,0,-1) SquareStartShapeXY}
+
+SquareStartShapeXY -->
+	split(x){'0.5: Sign | '0.5: Wall}
+	
+Wall --> case ShowWall: extrude(3) else: NIL
+	
+Sign -->
+	t(0,0,SignMountHeight)
+	rotate(rel,scope,0,0,180)
+	center(xy)
+	s(signWidth,signThickness,0)
+	center(y)
+	extrude(SignHeight)
+	comp(f){front: SignTexture | back: SignTexture | all: color(signEdgeColor) X.} 
+
+SignTexture -->
+	setupProjection(0,scope.xy, '1, '1)
+	projectUV(0)
+	texture(SignImage)
+	
+	
+	
+	

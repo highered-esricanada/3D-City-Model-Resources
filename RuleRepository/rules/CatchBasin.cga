@@ -1,0 +1,212 @@
+/**
+ * File:    CatchBasin.cga
+ * Created: 18 May 2015 17:21:41 GMT
+ * Author:  chri7180
+ */
+
+version "2015.0"
+
+const textureConcrete = "Textures/ConcreteBrightHighContrast.jpg"
+
+import GrillSquare:"rules/GrillSquare.cga"
+
+
+@Group("Orientation", 10)
+@Range(-360,360)
+@Order(1)
+attr basinRotation = 0
+@Order(2)
+attr ShowSection = true
+@Order(3)
+attr SectionCutColor = "#FF0000"
+
+@Group("Basin Dimensions", 20)
+attr GrillAdapterDepth = uFeet(0.5)
+const grillAdapterDepth = meters(GrillAdapterDepth)
+attr GrillDepth = uFeet(grillAdapterDepth * 0.75)
+const grillDepth = meters(GrillDepth)
+attr GrillWidth = uFeet(3)
+const grillWidth = meters(GrillWidth)
+attr BasinDepth = uFeet(8)
+const basinDepth = meters(BasinDepth)
+attr BasinWidth = uFeet(5)
+const basinWidth = meters(BasinWidth)
+
+const totalDepth = grillAdapterDepth + basinDepth + slabThickness
+const outsideWidth = basinWidth + (2 * wallThickness)
+const adapterWidth = (outsideWidth - grillWidth) / 2  
+
+@Order(3)
+attr WallThickness = uFeet(5/12)
+const wallThickness = meters(WallThickness)
+attr SlabThickness = WallThickness 
+const slabThickness = meters(SlabThickness)
+
+@Group("Units",60)
+@Range("Feet","Meters")
+attr units = "Feet"
+unitScale = case units == "Feet": 3.28084 else: 1
+
+@StartRule @InPoint
+CatchBasinPoint -->
+	#Force square shape.
+	s(1,0,1)
+	center(xz)
+	i("builtin:cube")
+	comp(f){top: t(0,0,-1) ReturnToXZScopeSinceItWasBuiltThatWay}
+
+ReturnToXZScopeSinceItWasBuiltThatWay -->
+	alignScopeToAxes(y)
+	s(outsideWidth, 0, outsideWidth)
+	center(xz)
+	r(0,basinRotation,0)
+	center(xz)
+	t(0, -totalDepth, 0)
+	Slab
+	t(0, slabThickness, 0)
+	Basin
+	t(0, basinDepth, 0)
+	GrillAdapter
+	s(grillWidthFinal, 0, grillWidthFinal)
+	center(xz)
+	t(0, grillAdapterDepth - grillDepth, 0)
+	Grill
+
+Slab -->
+	case !ShowSection:
+		extrude(slabThickness)
+		TextureConcrete
+	else:
+		extrude(slabThickness)
+		split(z){'0.5: SlabSectioned}
+		
+SlabSectioned -->
+	comp(f){front: SectionCutFace | all: TextureConcrete}
+
+#################################################
+
+Basin -->
+	offset(-wallThickness)
+	comp(f){border: BasinWalls}
+
+BasinWalls --> 
+	case !ShowSection:
+		extrude(basinDepth)
+		TextureConcrete
+	else: 
+		case comp.index == 0: 
+			NIL
+		case comp.index == 1:
+			split(x) {'0.5: NIL | '0.5: BasinLeftWall}
+		case comp.index == 2:
+			BasinBackWall
+		case comp.index == 3:
+			split(x) {'0.5: BasinRightWall}
+		else:
+			NIL
+
+BasinBackWall -->
+	extrude(basinDepth)
+	comp(f){side: TextureConcrete}
+
+BasinLeftWall -->
+	extrude(basinDepth)
+	comp(f){left: SectionCutFace | side: TextureConcrete}
+	
+BasinRightWall -->
+	extrude(basinDepth)
+	comp(f){right : SectionCutFace | side: TextureConcrete}
+	
+#########################################
+
+GrillAdapter -->
+	offset(-adapterWidth)
+	comp(f){border: GrillAdapterBorder}
+
+GrillAdapterBorder -->
+	case !ShowSection:
+		extrude(grillAdapterDepth)
+		TextureConcrete
+	else: 
+		case comp.index == 0: 
+			NIL
+		case comp.index == 1:
+			split(x) {'0.5: NIL | '0.5: GrillLeftWall}
+		case comp.index == 2:
+			GrillBackWall
+		case comp.index == 3:
+			split(x) {'0.5: GrillRightWall}
+		else:
+			NIL
+
+GrillBackWall -->
+	extrude(grillAdapterDepth)
+	TextureConcrete
+
+GrillLeftWall -->
+	extrude(grillAdapterDepth)
+	comp(f){left: SectionCutFace | 4: GrillLeftWallLedge | all: TextureConcrete}
+
+GrillRightWall -->
+	extrude(grillAdapterDepth)
+	comp(f){right: SectionCutFace | 4: GrillRightWallLedge | all: TextureConcrete}
+
+const ledgeOut = 0.1
+const ledgeUp = grillAdapterDepth - grillDepth - grillFitTolerance
+const grillFitTolerance = 0.02
+const grillWidthFinal = grillWidth - grillFitTolerance
+
+GrillLeftWallLedge --> 
+	split(y){ledgeUp: LeftLedge | ~1: TextureConcrete}
+LeftLedge -->
+	extrude(ledgeOut)
+	comp(f) {right: SectionCutFace | all: TextureConcrete}
+
+GrillRightWallLedge --> 
+	split(y){ledgeUp: RightLedge | ~1: TextureConcrete}
+RightLedge -->
+	extrude(ledgeOut)
+	comp(f) {left: SectionCutFace | all: TextureConcrete}
+
+####################################
+
+Grill -->
+	GrillSquare.GrillFootprint
+	
+
+
+
+#######################################
+
+SectionCutFace -->
+	color(SectionCutColor) 
+	SectionCutFace.
+
+TextureConcrete -->
+	comp(f){all: TextureFaceConcrete}
+
+TextureFaceConcrete -->
+	alignScopeToGeometry(yUp, any, longest)
+	setupProjection(0, scope.xz, 5, 5)
+	projectUV(0)
+	rotateUV(0,rand(360))
+	texture(textureConcrete)
+	
+
+#################################################################
+# Include this in the rule anywhere. Bottom of rule probably.
+
+meters(valueInEitherFeetOrMeters) =
+	case units == "Feet": valueInEitherFeetOrMeters * 0.3048
+	else: valueInEitherFeetOrMeters
+
+# Allows CGA author to specify defaults in feet, rather than meters times scale.
+uFeet(valueInFeet) = 
+	case units == "Feet": valueInFeet
+	else: valueInFeet * 0.3048
+	
+uMeters(valueInMeters) =
+	case units == "Feet": valueInMeters * 3.28084
+	else: valueInMeters
+
+

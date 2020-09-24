@@ -1,0 +1,92 @@
+.cm-s-eiffel {
+	font-size: 1em;
+	line-height: 1.5em;
+	font-family: inconsolata, monospace;
+	letter-spacing: 0.3px;
+	word-spacing: 1px;
+	background: #FFFFFF;
+	color: #000000;
+}
+.cm-s-eiffel .CodeMirror-lines {
+	padding: 8px 0;
+}
+.cm-s-eiffel .CodeMirror-gutters {
+	box-shadow: 1px 0 2px 0 rgba(0, 0, 0, 0.5);
+	-webkit-box-shadow: 1px 0 2px 0 rgba(0, 0, 0, 0.5);
+	background-color: #FFFFFF;
+	padding-right: 10px;
+	z-index: 3;
+	border: none;
+}
+.cm-s-eiffel div.CodeMirror-cursor {
+	border-left: 3px solid #000000;
+}
+.cm-s-eiffel .CodeMirror-activeline-background {
+	background: #00000012;
+}
+.cm-s-eiffel .CodeMirror-selected {
+	background: #C3DCFF;
+}
+.cm-s-eiffel .cm-comment {
+	color: #00B418;
+}
+.cm-s-eiffel .cm-keyword, .cm-s-eiffel .cm-funcPurple {
+	color: #990099;
+	 font-weight: bold;
+}
+
+
+
+.cm-s-eiffel .cm-rule, .cm-s-eiffel .cm-function, .cm-s-eiffel .cm-op, .cm-s-eiffel .cm-op_{
+	color: #990099;
+}
+
+.cm-s-eiffel .cm-multilineComment{
+	color: #3F7DE0
+}
+
+
+.cm-s-eiffel .cm-annotation{
+	color: #3F5FD5
+}
+
+.cm-s-eiffel .cm-number {
+	font-style: italic;
+	color: #3C4C72;
+}
+.cm-s-eiffel .cm-atom {
+	font-style: italic;
+	color: #3C4C72;
+}
+.cm-s-eiffel .cm-string {
+	color: #2A00FF;
+}
+
+.cm-s-eiffel .cm-attribute {
+	color: #2A00FF;
+ 	font-style: italic;
+}
+
+.cm-s-eiffel .cm-keyFunction {
+	color: #2A00FF;
+ 	font-weight: bold;
+}
+
+.cm-s-eiffel .cm-func, .cm-s-eiffel .cm-celib, .cm-s-eiffel .cm-attr  {
+	color: #2A00FF;
+ 	font-weight: bold;
+}
+
+
+.cm-s-eiffel .cm-def {
+	font-style: italic;
+}
+.cm-s-eiffel .cm-property {
+	color: #3C4C72;
+}
+.cm-s-eiffel .cm-operator {
+	color: #0100B6;
+}
+.cm-s-eiffel .CodeMirror-linenumber {
+	color: #00B418;
+}

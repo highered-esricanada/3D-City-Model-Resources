@@ -1,0 +1,136 @@
+/**
+ * File:    ImagePatchXY.cga
+ * Created: 13 Jun 2016 17:52:23 GMT
+ * Author:  chri7180
+ */
+
+version "2016.0"
+
+
+@Hidden
+attr _imageFile = "" 
+@Hidden
+attr _xStart = 0 
+@Hidden
+attr _xEnd = 1 
+@Hidden
+attr _yStart = 0
+@Hidden
+attr _yEnd = 1 
+
+@Hidden
+attr _xRealWorldSize = 0 
+@Hidden
+attr _yRealWorldSize = 0 
+
+@Hidden
+attr _xTarget = 0 
+@Hidden
+attr _yTarget = 0 
+
+
+targetScopeYStart = _yStart  
+targetScopeYEnd = _yEnd
+height = (targetScopeYEnd - targetScopeYStart) * _yRealWorldSize
+
+targetScopeXStart = _xStart  
+targetScopeXEnd = _xEnd
+width = (targetScopeXEnd - targetScopeXStart) * _xRealWorldSize
+
+TextureFace(imageFile, xStart, xEnd, yStart, yEnd, xRealWorldSize, yRealWorldSize) -->
+	set(_imageFile, imageFile)  
+	set(_xStart, constrainToRange(xStart, 0, 1)) 
+	set(_xEnd, constrainToRange(xEnd, 0, 1)) 
+	set(_yStart, constrainToRange(yStart, 0, 1))
+	set(_yEnd, constrainToRange(yEnd, 0, 1)) 
+	set(_xRealWorldSize, xRealWorldSize) 
+	set(_yRealWorldSize, yRealWorldSize) 
+	set(_xTarget, scope.sx) 
+	set(_yTarget, scope.sy) 						# XX This needs to be changed
+	Texture
+
+pixelsX = imageInfo(_imageFile, sx)
+pixelsY = imageInfo(_imageFile, sy)
+imageWidthPerHeight = pixelsX / pixelsY
+
+
+ 
+xRange = _xEnd - _xStart
+yRange = _yEnd - _yStart
+finalXSize = _xTarget
+finalYSize = _yTarget 
+yProjectionSize = finalYSize / yRange
+xProjectionSize = yProjectionSize * imageWidthPerHeight
+yOffset = -1 * yProjectionSize * _yStart
+xOffset = -1 * xProjectionSize * _xStart
+
+#xDiff = scope.sx - _xProjectionIn
+#xOffset = xDiff * 0.5
+
+
+
+Texture -->
+	setupProjection(0, scope.xy, xProjectionSize, yProjectionSize, xOffset, yOffset)
+	projectUV(0)
+	texture(_imageFile)
+
+
+##################################################################
+
+attr TestImage = "Tank/TankImageTest.jpg"
+@Range(0,1)
+attr TestX1 = 0
+@Range(0,1)
+attr TestX2 = 0.5
+@Range(0,1)
+attr TestY1 = 0
+@Range(0,1)
+attr TestY2 = 0.5
+attr Test_Width = scope.sx
+
+const Test_Height = Test_Width * TestImageYPerX  
+const TestImagePixX = imageInfo(TestImage, sx)
+const TestImagePixY = imageInfo(TestImage, sy)
+const TestImageYPerX = TestImagePixY / TestImagePixX
+
+
+
+
+@StartRule
+Test -->
+	alignScopeToAxes(y)
+	s(Test_Width,0,Test_Width)
+	center(xz)
+	extrude(Test_Height)
+	comp(f){top:NIL | front: Facade}
+
+Facade -->
+	WholeTestImage
+	split(y) {'TestY1: NIL |
+		'(TestY2 - TestY1): SplitX | 
+		~1: NIL
+	}
+
+WholeTestImage -->
+	setupProjection(0,scope.xy,'1,'1)
+	projectUV(0)
+	texture(TestImage)
+
+SplitX -->
+	split(x) {'TestX1: NIL |
+		'(TestX2 - TestX1): color(1,0,0) t(0,0,0.1) TextureFace(TestImage, TestX1, TestX2, TestY1, TestY2, Test_Width, Test_Height)  
+		| ~1: NIL
+	}
+	
+
+	
+################################
+# Normalization functions
+
+constrainToRange(dataValueOriginal, minDataValue, maxDataValue) = 
+	case dataValueOriginal < minDataValue: minDataValue
+	case dataValueOriginal > maxDataValue: maxDataValue
+	else: dataValueOriginal	
+	
+	
+	

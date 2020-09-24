@@ -1,0 +1,50 @@
+# Site settings
+title: 3D City Model Resources
+email: highered@esri.ca
+url: https://example.github.io
+description: "by Esri Canada's Education & Research Group"
+# Color settings (hex-codes without the leading hash-tag)
+color:
+  primary-dark: '#FFFFFF'
+  text: '#000000'
+  links: '#219ab3'
+
+# Footer settings
+footer: Esri Canada
+
+# Social networks usernames
+social:
+  - title: twitter
+    url: https://twitter.com/EsriCanada_CE
+  - title: github
+    url: https://github.com/EsriCanada-CE
+
+# Build settings
+markdown: kramdown
+permalink: pretty
+
+category_order:
+  - 'Building'
+  - 'Planning'
+  - 'Nature'
+  - 'Transport'
+  - 'Recreation'
+  - 'Infrastructure'
+  - 'Tools'
+
+collections:
+  rules:
+    output: true
+
+  
+exclude:
+  - "*.jpg"
+  - "*.obj"
+  - "*.fbx"
+  - "*.dae"
+  - "*.mtl"
+  - "*.cej"
+  - "*.log"
+  - "*.py"
+  - "*.csv"
+  - "*.cgb"

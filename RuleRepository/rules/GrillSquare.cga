@@ -1,0 +1,82 @@
+/**
+ * File:    GrillSquare.cga
+ * Created: 18 May 2015 21:49:04 GMT
+ * Author:  chri7180
+ */
+
+version "2015.0"
+
+@Hidden
+attr units = "Feet"
+@Hidden
+attr GrillDepth = 0
+const grillDepth = meters(GrillDepth)
+@Hidden
+attr GrillWidth = 0
+const grillWidth = meters(GrillWidth)
+
+const grillFitTolerance = 0.02
+const grillWidthFinal = grillWidth - grillFitTolerance
+
+attr BorderFrameWidth = uFeet(0.2)
+const borderFrameWidth = meters(BorderFrameWidth)
+attr GrillTeethWidth = uFeet(0.1)
+const grillTeethWidth = meters(GrillTeethWidth)
+attr slotWidth = grillTeethWidth 
+const grillTeethDepth = grillDepth / 2
+# Assumes grill is square.
+const toothJoistWidth = grillTeethWidth * 1.5
+
+@StartRule
+GrillFootprint -->
+	offset(-borderFrameWidth)
+	comp(f){border: Frame | inside: GrillPattern}
+	
+Frame -->
+	extrude(grillDepth)
+	TextureGrill
+
+GrillPattern -->
+	t(0, 0, grillTeethDepth)
+	extrude(grillTeethDepth)
+	split(z){~1: GrillTeethBay 
+			| toothJoistWidth: ToothJoist 
+			| ~1: GrillTeethBay}
+
+GrillTeethBay --> 
+	split(x){{~slotWidth: NIL | grillTeethWidth: Tooth}* | ~slotWidth: NIL}	
+	
+Tooth --> TextureGrill
+ToothJoist --> TextureGrill
+
+#########################################
+	
+TextureGrill -->
+	comp(f) {all: TextureGrillFaces}
+	
+TextureGrillFaces -->
+	setupProjection(0, scope.xy, 1, 1)
+	projectUV(0)
+	rotateUV(0,rand(360))
+	texture("Textures/Rusty.jpg")	
+	
+	
+	
+#############################################
+
+#################################################################
+# Include this in the rule anywhere. Bottom of rule probably.
+
+meters(valueInEitherFeetOrMeters) =
+	case units == "Feet": valueInEitherFeetOrMeters * 0.3048
+	else: valueInEitherFeetOrMeters
+
+# Allows CGA author to specify defaults in feet, rather than meters times scale.
+uFeet(valueInFeet) = 
+	case units == "Feet": valueInFeet
+	else: valueInFeet * 0.3048
+	
+uMeters(valueInMeters) =
+	case units == "Feet": valueInMeters * 3.28084
+	else: valueInMeters
+	

@@ -1,0 +1,50 @@
+/**
+ * File:    ColorMassByOrientation.cga
+ * Created: 26 Sep 2016 15:21:07 GMT
+ * Author:  chri7180
+ */
+
+version "2016.1"
+
+
+@Order(1)
+@Color
+attr VerticalColor = "#cea966"
+@Order(2)
+@Color
+attr HorizontalColor = "#808080"
+@Order(3)
+@Color
+attr SlopeColor = "#ff0000"
+@Order(4)
+attr ToleranceAngle = 5 
+
+
+@StartRule @InMesh
+Mass -->
+	alignScopeToAxes(y)
+	comp(f){all: AngleCheck}
+
+AngleCheck -->
+	case isWithinTolerance(geometry.angle(maxSlope), 0, ToleranceAngle):
+		color(HorizontalColor) FaceHorizontal.
+	case isWithinTolerance(geometry.angle(maxSlope), 90, ToleranceAngle):
+		color(VerticalColor) FaceVertical.
+	else: 
+		color(SlopeColor) FaceSloped.
+		
+		
+isWithinTolerance(testValue, targetValue, tolerance) = abs(testValue - targetValue) <= tolerance 
+
+
+
+
+
+
+
+
+
+
+
+
+

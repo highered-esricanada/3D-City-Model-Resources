@@ -1,0 +1,46 @@
+/**
+ * File:    ZoningColors.cga
+ * Created: 17 Oct 2017
+ * Author:  ewittner
+ */
+
+version "2017.1"
+
+// Add additional names & colors depending on how many different zoning types you have
+@Group("Zoning Colors")
+attr residentialColor = "#FFFF00"
+@Group("Zoning Colors")
+attr commercialColor 	= "#FF0000"
+@Group("Zoning Colors")
+attr industrialColor 	= "#A020F0"
+@Group("Zoning Colors")
+attr greenspaceColor 	= "#228B22"
+@Group("Zoning Colors")
+attr parkingColor 	= "#D3D3D3"
+
+
+// Change "ZONING" to whatever the name of your field is for the zoning category, then add additional cases until you've covered all the zoning types
+
+@Range("Residential", "Commercial", "Industrial", "Green Space", "Parking")
+attr ZONING = "Residential" 
+attr HEIGHT = 1
+
+
+@StartRule
+Zones --> 
+	case ZONING == "Residential" :
+		color(residentialColor)
+		extrude(world.up, HEIGHT)
+	case ZONING == "Commercial" :
+		color(commercialColor)
+		extrude(world.up, HEIGHT)
+	case ZONING == "Industrial" :
+		color(industrialColor)
+		extrude(world.up, HEIGHT)
+	case ZONING == "Green Space" :
+		color(greenspaceColor)
+		extrude(world.up, HEIGHT)
+	case ZONING == "Parking" :
+		color(parkingColor)
+		extrude(world.up, HEIGHT)
+	else : NIL

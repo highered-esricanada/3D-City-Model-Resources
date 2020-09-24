@@ -1,0 +1,10 @@
+_site
+.bundle
+.sass-cache
+Gemfile.lock
+.DS_Store
+*.cgb
+*.log 
+web.config  
+.jekyll-cache/
+.jekyll-metadata

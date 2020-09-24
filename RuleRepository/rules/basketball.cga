@@ -1,0 +1,25 @@
+/**
+ * File:    court.cga
+ * Created: 3 Apr 2017 14:27:58 GMT
+ * Author:  Esri Canada */
+
+version "2016.1"
+
+attr courtLength = 14
+
+@StartRule
+Shape-->
+   innerRectangle(edge) {shape : Court}
+	
+Court -->
+	alignScopeToGeometry(yUp, 0, longest)
+	rotateScope(90,0,0)
+    Hoop
+    rotateScope(0,180,0)
+    Hoop
+
+Hoop -->
+   t(-1 * courtLength,0,0)
+   alignScopeToAxes(y)
+   i("assets/Basketball/bball.obj", yUp, keepSizeAlignPosition)
+   SelCube.

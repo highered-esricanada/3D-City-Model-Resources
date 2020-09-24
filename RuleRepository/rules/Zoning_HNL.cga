@@ -1,0 +1,166 @@
+/**
+ * File:    Zoning_Volumes.cga
+ * Created: 17 Jul 2012 12:08:24 GMT
+ * Author:  Pascal
+ */
+
+version "2012.1"
+
+
+
+
+@Group("Zoning",1) @Order(1) @Range("Agriculture","Civic","Employment","Federal", "High-Density Housing","High-Intensity Live/Work","Industrial","Low Density Housing - Multi-Family","Low Density Housing - Single Family","Medium-Density Housing","Medium-Intensity Live/Work","Mixed-Use Commercial","Mixed-Use Residential","Parks and Open Space","Retail","Structured Parking")
+attr Land_Use = "High-Density Housing"
+
+## Buildable Volume
+
+@Group("Buildable Volume",2) @Order(1)
+attr Max_Height = 
+	case Land_Use == "High-Intensity Live/Work" 			: 9*3
+	case Land_Use == "Medium-Intensity Live/Work" 			: 5*2.8
+	case Land_Use == "High-Density Housing" 				: 9*2.8
+	case Land_Use == "Medium-Density Housing" 				: 5*2.8
+	case Land_Use == "Low Density Housing - Single Family" 	: 3*2.8 * 1.3
+	case Land_Use == "Low Density Housing - Multi-Family" 	: 3*2.8 * 1.4
+	case Land_Use == "Agriculture" 							: 3*2.8 * 1.2
+	case Land_Use == "Parks and Open Space" 				: 0
+	case Land_Use == "Structured Parking" 					: 1*3
+	case Land_Use == "Employment" 							: 3*3.2 * 1.2
+	case Land_Use == "Industrial" 							: 3*4 * 1.2
+	case Land_Use == "Retail" 								: 3*3.5
+	case Land_Use == "Mixed-Use Residential" 				: 9*3.2
+	case Land_Use == "Mixed-Use Commercial" 				: 9*3.2
+	case Land_Use == "Federal" 								: 4*2.8 * 1.2
+	else 													: 3*3 * 1.2
+
+@Group("Buildable Volume") @Order(2)
+attr Front_Yard_Depth = 
+	case Land_Use == "High-Intensity Live/Work" 			: 1
+	case Land_Use == "Medium-Intensity Live/Work" 			: 1
+	case Land_Use == "High-Density Housing" 				: 1
+	case Land_Use == "Medium-Density Housing" 				: 3
+	case Land_Use == "Low Density Housing - Single Family"	: 5
+	case Land_Use == "Low Density Housing - Multi-Family" 	: 4
+	case Land_Use == "Agriculture" 							: 1
+	case Land_Use == "Parks and Open Space" 				: 1
+	case Land_Use == "Structured Parking" 					: 0
+	case Land_Use == "Employment" 							: 2
+	case Land_Use == "Industrial" 							: 1
+	case Land_Use == "Retail" 								: 3
+	case Land_Use == "Mixed-Use Residential" 				: 2
+	case Land_Use == "Mixed-Use Commercial" 				: 2
+	case Land_Use == "Federal" 								: 2
+	else 													: 1
+	
+@Group("Buildable Volume") @Order(3)
+attr Side_Yard_Width =
+	case Land_Use == "High-Intensity Live/Work" 			: 0
+	case Land_Use == "Medium-Intensity Live/Work" 			: 1
+	case Land_Use == "High-Density Housing" 				: 0
+	case Land_Use == "Medium-Density Housing" 				: 1
+	case Land_Use == "Low Density Housing - Single Family"	: 2
+	case Land_Use == "Low Density Housing - Multi-Family" 	: 1
+	case Land_Use == "Agriculture" 							: 0
+	case Land_Use == "Parks and Open Space" 				: 0
+	case Land_Use == "Structured Parking" 					: 0
+	case Land_Use == "Employment" 							: 1
+	case Land_Use == "Industrial" 							: 1
+	case Land_Use == "Retail" 								: 0
+	case Land_Use == "Mixed-Use Residential" 				: 1
+	case Land_Use == "Mixed-Use Commercial" 				: 1
+	case Land_Use == "Federal" 								: 1
+	else 													: 1
+
+@Group("Buildable Volume") @Order(4)
+attr Setback_Baseheight = 
+	case Land_Use == "High-Intensity Live/Work" 			: 9*3
+	case Land_Use == "Medium-Intensity Live/Work" 			: 5*2.8
+	case Land_Use == "High-Density Housing" 				: 9*2.8
+	case Land_Use == "Medium-Density Housing" 				: 5*2.8
+	case Land_Use == "Low Density Housing - Single Family" 	: 3*2.8
+	case Land_Use == "Low Density Housing - Multi-Family" 	: 3*2.8
+	case Land_Use == "Agriculture" 							: 3*2.8
+	case Land_Use == "Parks and Open Space" 				: 0
+	case Land_Use == "Structured Parking" 					: 1*3
+	case Land_Use == "Employment" 							: 3*3.2
+	case Land_Use == "Industrial" 							: 3*4
+	case Land_Use == "Retail" 								: 3*3.5
+	case Land_Use == "Mixed-Use Residential" 				: 9*3.2
+	case Land_Use == "Mixed-Use Commercial" 				: 9*3.2
+	case Land_Use == "Federal" 								: 4*2.8
+	else 													: 3*3
+
+
+
+@Group("Buildable Volume") @Order(6)
+attr Setback_Angle = 65
+
+
+## Model Options
+
+@Group("Options") @Order(1) @Range("Feet","Meters")
+attr Unit = "Meters"
+
+@Group("Options") @Order(2)
+attr Zoning_Color =
+	case Land_Use == "High-Intensity Live/Work" 			: "#6d467d"
+	case Land_Use == "Medium-Intensity Live/Work" 			: "#b18fb7"
+	case Land_Use == "High-Density Housing" 				: "#a2743c"
+	case Land_Use == "Medium-Density Housing" 				: "#dd9b5f"
+	case Land_Use == "Low Density Housing - Single Family" 	: "#ffffbe"
+	case Land_Use == "Low Density Housing - Multi-Family" 	: "#ffd37f"
+	case Land_Use == "Agriculture" 							: "#809672"	
+	case Land_Use == "Parks and Open Space" 				: "#72b43e"
+	case Land_Use == "Structured Parking" 					: "#aab3c1"
+	case Land_Use == "Employment" 							: "#496096"
+	case Land_Use == "Industrial" 							: "#656565"
+	case Land_Use == "Retail" 								: "#dd5f5b"
+	case Land_Use == "Mixed-Use Residential" 				: "#b0445b"
+	case Land_Use == "Mixed-Use Commercial" 				: "#d45491"
+	case Land_Use == "Federal" 								: "#3194d7"
+	else 													: "#000000"
+	
+@Group("Options") @Order(3) @Range(0,1)
+attr Transparency = 0.5
+
+
+#########################################33
+# helper functions
+#
+
+const f = case Unit == "Feet": 0.3048 else: 1
+
+
+
+
+
+
+
+#########################################33
+# rules
+#
+@StartRule
+Parcel -->
+	setback(Front_Yard_Depth*f-0.2){ street.front: NIL | remainder:
+			setback(Side_Yard_Width*f-0.2){ street.back: NIL |  street.side: NIL | remainder: BuildableArea } }
+			
+BuildableArea -->
+	extrude(Setback_Baseheight*f)
+	comp(f){side = BuildableVolume 
+			| top: BuildableVolumeTop }
+			
+BuildableVolumeTop -->
+	case Max_Height*f-Setback_Baseheight*f > 0:
+		roofHip(Setback_Angle) 
+		split(y){ Max_Height*f-Setback_Baseheight*f: comp(f){ bottom: NIL | all = BuildableVolume } }
+	else:
+		BuildableVolume
+	
+	
+BuildableVolume -->
+	//cleanupGeometry(all,1)
+	color(Zoning_Color)
+	set(material.opacity,1-Transparency)
+	
+	
+

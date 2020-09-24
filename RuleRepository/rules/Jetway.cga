@@ -1,0 +1,1459 @@
+/**
+ * File:    Jetway.cga
+ * Created: 21 May 2015 15:49:30 GMT
+ * Author:  chri7180
+ */
+
+version "2015.0"
+
+const assetsPath = "assets/Jetway/"
+const roundPartsPath = "assets/RoundParts/" 
+const assetPipe32NoCaps = roundPartsPath + "Pipe32NoCaps.obj"
+const assetPipe32 = roundPartsPath + "Pipe32.obj"
+
+
+@Group("AIRCRAFT MATCH",1)
+@Range("None", "B737","B777","A380, upper deck", "A380, lower deck")
+attr AircraftType = "None"
+
+@Group("Mobile Positioning",10)
+@Range(-90,90) @Order(1)
+attr ExtendingArmRotation = getExtendingArmRotation( AircraftType )
+@Range(2.1,6.1) @Order(2)
+attr PlaneDoorHeight = getPlaneDoorHeight( AircraftType )
+@Range(-90,45) @Order(3)
+attr PlaneDoorPivotRotation = getPlaneDoorPivotRotation( AircraftType )
+# from center of fixed pivot room to center of mobile pivot room:
+@Range(10,50) @Order(4)
+attr Extension = getExtension( AircraftType ) 
+
+
+
+@Group("Installation",20)
+# Rotation of fixed arm is clockwise with north at 0.
+@Range(0,360)
+attr fixedArmDirection = 270
+attr fixedArmLength = 1
+attr fixedPierHeight = 4
+@Range(20,60)
+attr maxExtension = getMaxExtension( AircraftType )
+attr extendingArmSleeveThickness = 0.2
+
+# for shorthand:
+const mainSleeve = extendingArmSleeveThickness
+
+#############################################
+
+
+
+
+# Constants calculated from mobile positioning attributes.
+
+# Checking for user error/max/min.
+const planeDoorPivotRotationConstrained = 
+	case PlaneDoorPivotRotation > 45: 45
+	case PlaneDoorPivotRotation < -90: -90
+	else: PlaneDoorPivotRotation
+
+
+
+# Checking for user error.
+const extensionConstrained = 
+	case Extension > maxExtension: maxExtension 
+	case Extension < minExtension: minExtension 
+	else: Extension
+
+# Based on fixed install attrs:
+# (nothing based on angle yet)
+const pivotRoomDiameter = extendingArmWidth
+const halfPivotRoom = pivotRoomDiameter / 2
+const maxArmExtension = maxExtension - (halfPivotRoom * 2)
+const extendingArmSectionLength = ((2 * minSectionOverlap) + maxArmExtension) / 3
+const minExtension = extendingArmSectionLength + (halfPivotRoom * 2.5)
+
+# Based on plane door and extension positioning attrs:
+const slopeHeight = fixedPierHeight - PlaneDoorHeight
+const slopeHypotenuse = extensionConstrained - halfPivotRoom
+const armExtension = slopeHypotenuse - halfPivotRoom
+
+const extendingArmTilt = asin(slopeHeight / slopeHypotenuse) #* extendingArmTiltSign
+#const extendingArmTiltSign = case slopeHeight < 0: -1 else: 1    
+
+
+
+
+
+#########################################
+
+@Group("Mobile Part Sizes",30)
+# Rotation of extending arm is relative to straight fixed arm, clockwise.
+attr extendingArmWidth = 3 # Pivot rooms use this dimension also.
+attr extendingArmHeight = 3
+attr minSectionOverlap = 2
+#attr boardingPivotToExtension = 1.5  # This is now just half of pivot room (extending arm width).
+
+#########################################
+
+@Group("Fixed Part Sizes",40)
+const fixedArmWidth = extendingArmWidth
+attr fixedPierDiameter = 1
+
+#########################################
+#########################################
+#########################################
+
+const metalColor = "#c8c8c8"
+
+
+
+# Point or start shape rotation does not matter. 
+@StartRule @InPoint
+FixedPivotPoint -->
+	#color(metalColor)
+	set(trim.vertical,false)
+	[case Extension > maxExtension: print("Max extension exceeded (" + maxExtension + ")") else: NIL]
+	[case Extension < minExtension: print("Min extension not met (" + minExtension + ")") else: NIL]
+	#TEMPDebug
+	#TEMPGroundPlaneForDebugging
+	alignScopeToAxes(y)
+	rotate(abs, world, 0, 90-fixedArmDirection, 0)
+	s(1,0,1)
+	center(xz)
+	i("builtin:cube")
+	comp(f){top: t(0,0,-1) SquareStartShapeXY}
+
+SquareStartShapeXY -->
+	FixedPier
+	# Move square up, scale to pivotRoom size, and center.
+	t(0, 0, fixedPierHeight)
+	s(extendingArmWidth, extendingArmWidth, 0)
+	center(xy)
+	#
+	FixedPivotRoomStart
+	
+const fixedPierFlangeHeight = 0.03	
+const fixedPierFlangeWidth = 2	
+const fixedPierSleeveHeight = 0.15	
+const fixedPierSleeveWidth = 1.1	
+ 
+FixedPier -->
+	extrude(fixedPierHeight)
+	split(y){
+		'fixedPierFlangeHeight: Column(fixedPierFlangeWidth,"#0f0f0f") |
+		'fixedPierSleeveHeight: Column(fixedPierSleeveWidth,"#5f5f5f") |
+		~1: Column(1,"#f0f0f0") |
+		'fixedPierSleeveHeight: Column(fixedPierSleeveWidth,"#f0f0f0") |
+		'fixedPierFlangeHeight: Column(fixedPierFlangeWidth,"#f0f0f0")
+	}
+
+Column(diameter, columnColor)-->
+	s('diameter,'1,'diameter) 
+	center(xz) 
+	i(assetPipe32)
+	color(columnColor)
+	
+	
+	
+FixedPivotRoomStart -->
+	FixedArm
+	# Rotate room start before modeling room, and extending arm.
+	rotate(rel, scope, 0, 0, - ExtendingArmRotation )
+	center(xy)
+	#
+	FixedPivotRoomModel
+	ExtendingArmStart
+
+const interiorWallHeight = extendingArmHeight - ( mainSleeve * 2)
+const rotationPivotClearance = 1.05
+
+FixedArm -->
+	[
+		s('0.3,fixedArmWidth - ( mainSleeve * 4),0)
+		center(xy)
+		t(extendingArmWidth * 0.45,0, mainSleeve )
+		extrude(interiorWallHeight)
+		DirtyEdgeMetalLighterTexture
+	]
+	t(extendingArmWidth * rotationPivotClearance,0,0)
+	s(fixedArmLength,fixedArmWidth,0)
+	center(y)
+	extrude(extendingArmHeight)
+	ArmTexture
+	
+#FixedPivotToFixedArm -->
+	
+
+FixedPivotRoomModel -->
+	#[split(x){'0.2: FPSide}]
+	#[split(x){'0.5: FPHalf1 | '0.5: FPHalf2}]
+	# Model pivot room in this rule.
+	FPHalfRound
+	split(x){'0.5: FPHalfRect}
+
+
+const rollUpOffset = mainSleeve / 4
+
+FPHalfRound -->
+	[
+		extrude( mainSleeve )
+		i(assetPipe32)
+		split(x){'0.5: NIL | '0.5: DirtyEdgeMetalLighterTexture}
+	]
+	t(0,0, mainSleeve )
+	[
+		offset(-rollUpOffset)
+		comp(f){inside:
+			extrude(interiorWallHeight) 
+			i(assetPipe32NoCaps)
+			split(x){'0.5: NIL | '0.5: comp(f){side: RollUpPanel}}
+		}
+   	]
+   	t(0,0,interiorWallHeight)
+	[
+		extrude( mainSleeve )
+		i(assetPipe32)
+		split(x){'0.5: NIL | '0.5: DirtyEdgeMetalLighterTexture}
+	]
+	
+FPHalfRect -->
+	[extrude( mainSleeve ) X.]
+	t(0,0, mainSleeve )
+	[
+		split(x){
+			( mainSleeve * 2): FPRectCornerColumns |
+			~1: FPHalfRectRollUpStraight
+		}
+	]	
+   	t(0,0,interiorWallHeight)
+	extrude( mainSleeve ) DirtyEdgeMetalLighterTexture
+
+
+
+FPRectCornerColumns --> 
+	split(y){
+		( mainSleeve * 2): extrude(interiorWallHeight) DirtyEdgeMetalLighterTexture |
+		~1: NIL |
+		( mainSleeve * 2): extrude(interiorWallHeight) DirtyEdgeMetalLighterTexture
+	}
+
+FPHalfRectRollUpStraight --> 
+	s('1,scope.sy - (rollUpOffset * 2),0)
+	center(y)
+	extrude(interiorWallHeight) 
+	comp(f) { front: RollUpPanels | back: RollUpPanels}
+	
+RollUpPanels -->
+	split(x) {'0.25: RollUpPanel}*
+
+RollUpPanel -->
+	PivotRoomRollDoorTexture
+
+
+	
+
+FPSide -->
+	#s('1,scope.sy + extendingArmSleeveThickness * 2,'1)
+	#center(y)
+	split(y) {
+		mainSleeve : FPSide2(0) | 
+		~1: NIL | 
+		mainSleeve : FPSide2(180)
+	}
+FPSide2(rot) --> # XXX why was the rot argument here? 
+	extrude(extendingArmHeight)
+	#comp
+#	rotate(rel,scope,0,rot,0)
+##########################################
+
+ExtendingArmStart -->
+	t(-extendingArmWidth,0,0)
+	ExtendingArmRotate180
+	
+ExtendingArmRotate180 -->
+	# This is just to point scope X in direction of extension.
+	rotate(rel, scope, 0,0,180)
+	center(xy)
+	ExtendingArmTilt
+	
+ExtendingArmTilt -->
+	rotate(rel, scope, 0, extendingArmTilt, 0)
+	ExtendingArmScale
+
+ExtendingArmScale -->
+	#set(material.opacity, 0.4) #XX erase this later - just for dev.	
+	BoardingPivotRoomStart
+	s(armExtension,'1,0)
+	ExtendingArmBoxes
+	UtilityArms
+	
+
+const twoSleevesShowing = armExtension - extendingArmSectionLength
+const oneSleeveShowing = twoSleevesShowing / 2
+const halfSleeve = oneSleeveShowing / 2
+const utilityArmAngle = acos(halfSleeve / utilityArmLength)
+# Adding onto previous calc as an afterthought, not wanting to mess with original.
+const utilityArmExtrusionHeight = mainSleeve/2
+const utilityArmAngleAdditionalForExtrusion = asin(utilityArmExtrusionHeight / utilityArmLength)
+const utilityArmAngleFinal = utilityArmAngle + utilityArmAngleAdditionalForExtrusion 
+const maxTwoSleeve = maxArmExtension - extendingArmSectionLength
+const maxHalfSleeve = maxTwoSleeve / 4 	
+const utilityArmLength = maxHalfSleeve / cos(minUtilityArmAngleAtMaxExtension) 
+const minUtilityArmAngleAtMaxExtension = 15 
+
+	
+UtilityArms -->
+	s(twoSleevesShowing, '1, '1)
+	split(y){
+		utilityArmExtrusionHeight: t(0,-utilityArmExtrusionHeight,0) FoldArms("Right") | 
+		~1: NIL | 
+		utilityArmExtrusionHeight: t(0,utilityArmExtrusionHeight,0) FoldArms("Left")
+	}
+
+@Range("Both","Right","Left","None")
+attr foldArmSide = "Both" 
+
+FoldArms(side) -->
+	case foldArmSide == "Both": FoldArmStart
+	case foldArmSide == "None": NIL
+	case side == "Right" && foldArmSide == "Left": FoldArmStart
+	case side == "Left" && foldArmSide == "Right": FoldArmStart
+	else: NIL
+
+FoldArmStart -->
+	#Move forward for better mounting position.
+	#t(mainSleeve,0,0)
+	split(x){oneSleeveShowing: FoldArmHalf | oneSleeveShowing: FoldArmHalf}
+
+FoldArmHalf --> 
+	split(x){halfSleeve: FoldArmQuarter(false) | halfSleeve: FoldArmQuarter(true)}
+	
+	
+FoldArmQuarter(hinges) -->
+	case hinges:
+		rotate(rel,scope,0,0,180)
+		center(xy)
+		FoldArmTilt(hinges)
+	else:
+		FoldArmTilt(hinges)
+
+FoldArmTilt(hinges) -->
+	rotate(rel,scope,0,-utilityArmAngleFinal,0)
+	s(utilityArmLength,'1,'1)
+	FoldArm(hinges)
+
+
+
+const utilityArmHingeBoxLength = mainSleeve
+FoldArm(hinges) --> 
+	extrude(-utilityArmExtrusionHeight)
+	split(x){
+		utilityArmHingeBoxLength: FoldArmHinge(hinges,"bottom") |
+		~1: FoldArmRod |
+		utilityArmHingeBoxLength: FoldArmHinge(hinges,"top")
+	}
+		
+FoldArmHinge(makeHinge,whichEnd) --> 
+	case makeHinge:
+		FoldArmHinge2(whichEnd)
+	else: X.
+
+FoldArmHinge2(whichEnd) -->
+	case whichEnd == "top":
+		FoldArmHinge3
+	else:
+		rotate(rel,scope,0,0,180)
+		center(xy)
+		FoldArmHinge3
+		
+FoldArmHinge3 -->
+	FoldArmHinge3.
+	comp(f){back: FoldArmHinge4}
+
+FoldArmHinge4 -->
+	t(utilityArmExtrusionHeight,0,-utilityArmExtrusionHeight * 0.9)
+	s('1,'2,0)
+	extrude(utilityArmExtrusionHeight * 0.8)
+	i(assetPipe32)
+	FoldArmHinge5
+FoldArmHinge5 -->
+	s('0.9,'1,'0.9)
+	center(xyz)
+	color(0,0,0)
+	
+
+FoldArmRod --> 
+	rotateScope(0,90,0)
+	i(assetPipe32NoCaps)
+	color(1,1,1) X.
+
+
+
+ExtendingArmBoxes -->
+	SleeveOuter
+	t(0,0, mainSleeve )
+	SleeveMiddle
+	t(0,0, mainSleeve )
+	SleeveInner
+
+SleeveOuter -->
+	s(extendingArmSectionLength,'1,'1)
+	t(armExtension - extendingArmSectionLength,0,0)
+	extrude(extendingArmHeight)
+	comp(f){left: SOSleeve | right: SOSleeve | bottom: SOBottom | all: ArmTexture}
+
+SOSleeve -->
+	offset(-mainSleeve)
+	comp(f){inside: NIL | border: SleeveEdge}
+
+SOBottom -->
+	ArmTexture
+	WheelMount
+	# Model/texture rest of bottom side here.
+
+
+ArmTexture -->
+	#alignScopeToAxes(y)
+	color("#FFFFFF")
+	setupProjection(0,scope.xy,1.5,2)
+	projectUV(0)
+	texture("Jetway/ContainerSidingWhite2.jpg")
+
+
+SleeveMiddle -->
+	s(extendingArmSectionLength,'1,'1)
+	center(x)
+	s('1, extendingArmWidth - (2 * mainSleeve ), 0)
+	center(y)
+	extrude(extendingArmHeight - (2 * mainSleeve ))
+	comp(f){left: SMSleeve | right: SMSleeve | all: ArmTexture}
+SMSleeve -->
+	offset(- mainSleeve )
+	comp(f){inside: NIL | border: SleeveEdge}
+	
+
+SleeveInner -->
+	s(extendingArmSectionLength,'1,'1)
+	s('1, extendingArmWidth - (4 * mainSleeve ), 0)
+	center(y)
+	extrude(extendingArmHeight - (4 * mainSleeve ))
+	comp(f){left: SISleeve| right: SISleeve | all: ArmTexture}
+SISleeve -->
+	extrude( mainSleeve * 2)
+	#DirtyEdgeMetalLighterTexture
+	offset(- extendingArmSleeveThickness )
+	comp(f){inside: NIL | border: SleeveEdge}
+
+	
+SleeveEdge --> X. #color(0,0,0)
+
+#################################################
+
+BoardingPivotRoomStart -->
+	t(armExtension,0,0)
+	#extrude(extendingArmHeight)
+	BoardingPivotRoomFixed
+	BoardingPivotRoomPivotable
+	
+const BoardingPivotRoomRadius = sqrt(2 * (halfPivotRoom * halfPivotRoom)) 
+BoardingPivotRoomFixed -->
+	# This one is solidly connected to the extending arm. 
+	s(BoardingPivotRoomRadius * 2, BoardingPivotRoomRadius * 2, 0)
+	center(xy)
+	BoardingPivotRoomFixed_Bottom
+	t(0,0,mainSleeve)
+	BoardingPivotRoomFixed_Middle
+   	t(0,0,interiorWallHeight)
+	BoardingPivotRoomFixed_Top
+
+BoardingPivotRoomFixed_Bottom -->
+	extrude( mainSleeve ) 
+	i(assetPipe32)
+	split(x){
+		BoardingPivotRoomRadius - halfPivotRoom: NIL |
+		halfPivotRoom: BoardingPivotRoomFixed_Bottom2 |
+		~1: DirtyEdgeMetalLighterTexture
+	}
+	
+BoardingPivotRoomFixed_Bottom2 --> 
+	split(z){
+		~1: DirtyEdgeMetalLighterTexture |
+		BoardingPivotRoomRadius - halfPivotRoom: NIL
+	}
+
+BoardingPivotRoomFixed_Middle -->
+	ExitStairsDoorAndWalls
+	extrude(interiorWallHeight)
+	i(assetPipe32NoCaps)
+	rotate(rel,scope,0,-planeDoorPivotRotationConstrained,0)
+	center(xz)
+	Roller
+	#split(x) {'0.5: RollerBack | '0.5: RollerFront}
+	
+#const rotL = 60 - planeDoorPivotRotationConstrained
+
+Roller --> 
+	split(x) {BoardingPivotRoomRadius + topHalfTriangle: RF2}
+	
+RF2 -->
+	setPivot(xyz,0)
+	rotateScope(0,planeDoorPivotRotationConstrained,0)
+	RF3
+	
+	
+
+
+	#setPivot(xyz,0)
+	#rotateScope(0,rotL,0)
+	#setPivot(xyz,0)
+	#split(x){BoardingPivotRoomRadius: RF3}
+
+RF3 -->
+	split(x){BoardingPivotRoomRadius: RF4 | ~1: RFTexture}
+	#split(x) {BoardingPivotRoomRadius - halfPivotRoom: NIL | ~1: RF4}
+
+RF4 -->
+	split(x) {BoardingPivotRoomRadius - halfPivotRoom: NIL | ~1: RF5}
+
+RF5 --> 
+	split(z) {BoardingPivotRoomRadius - halfPivotRoom: RFTexture | ~1: NIL}
+
+RFTexture --> PivotRoomRollDoorTexture
+
+ExitStairsDoorAndWalls -->
+	split(x){
+		BoardingPivotRoomRadius - halfPivotRoom: NIL |
+		halfPivotRoom: ExitStairsDoorAndWalls2 
+	} 
+ExitStairsDoorAndWalls2 -->
+	split(y){
+		BoardingPivotRoomRadius - halfPivotRoom: ExitStairsDoorAndWalls_Landing |
+		mainSleeve: ExitStairsDoorAndWalls_DoorWall
+	}
+	
+ExitStairsDoorAndWalls_DoorWall --> 
+	split(x){
+		mainSleeve: extrude(interiorWallHeight) DirtyEdgeMetalLighterTexture |
+		~1: ExitDoor |
+		mainSleeve * 2: extrude(interiorWallHeight) DirtyEdgeMetalLighterTexture
+	}
+	
+const exitDoorHeight = 2.5
+ExitDoor -->
+	extrude(interiorWallHeight)
+	split(y){exitDoorHeight: ExitDoor_Door | ~1: DirtyEdgeMetalLighterTexture}
+ExitDoor_Door -->
+	s('1,'1,mainSleeve/2)
+	center(z)
+	comp(f){front: ExitDoor_DoorTexture | back: ExitDoor_DoorTexture}
+
+ExitDoor_DoorTexture -->
+	setupProjection(0,scope.xy, scope.sx, scope.sy)
+	projectUV(0)
+	texture("Jetway/Door.jpg")
+
+ExitStairsDoorAndWalls_Landing --> 
+	split(x){
+		~1: ExitStairsDoorAndWalls_Landing2 | 
+		mainSleeve: ExitStairsDoorAndWalls_NotDoorWall
+	}
+
+ExitStairsDoorAndWalls_NotDoorWall --> 
+	extrude(interiorWallHeight)
+
+const StairLandingSlightLift = 0.02
+ExitStairsDoorAndWalls_Landing2 --> 
+	#t(0,0,StairLandingSlightLift) # XX
+	rotate(rel,scope,0,0,180)
+	center(xy)
+	s(landingFinalWidth,landingDepth,0)
+	LandingFloorOnePiece 
+
+	
+LandingFloorOnePiece -->
+	color(metalColor)
+	split(y) {BoardingPivotRoomRadius - halfPivotRoom: LandingToLadder |
+		~1: LandingToSlope}
+
+const railingThickness = 0.04
+const railingHeight = 1
+LandingToLadder -->
+	t(-mainSleeve,0,0)
+	s(scope.sx + mainSleeve,'1,0)
+	LandingToLadderMakeThick
+	split(x) {~1: NIL | railingThickness: LandingToLadderRailing  }
+
+LandingToLadderRailing -->
+	extrude(railingHeight)
+	split(y){~1: LandingToLadderRailingBalusters | railingThickness: Banister}
+LandingToLadderRailingBalusters -->
+	split(z) {{railingThickness: Baluster | ~ballusterSpacing: NIL}* | railingThickness: Baluster} 
+	
+
+LandingToLadderMakeThick -->
+	t(0,0,-mainSleeve)
+	extrude(mainSleeve)
+	StairRubber
+	
+attr showChute = false
+	
+	
+const landingStartWidth = halfPivotRoom - mainSleeve
+const landingFinalWidth = landingStartWidth * 2
+const landingDepth = stairsWidth + chuteWidth + landingToLadderWidth + railingThickness 
+const landingToLadderWidth = (BoardingPivotRoomRadius - halfPivotRoom)
+const stairsWidth = 1
+const chuteWidth = 1
+	
+attr stairsOffsetBackFromArmTip = landingFinalWidth - landingStartWidth 
+const stairAngleFlat = 30
+const slopeLength = fixedPierHeight / sin(stairAngleFlat)
+# This will be positive when tilting up.
+const tipOverFixedPierHeight = 
+		(-1) * sin(extendingArmTilt) * (armExtension-stairsOffsetBackFromArmTip) 
+const tipHeight = tipOverFixedPierHeight + fixedPierHeight 
+const stairSlope = asin(tipHeight / slopeLength)
+const stairRotationDown = stairSlope + extendingArmTilt
+
+# This takes the landings for stairs and chute.
+LandingToSlope -->
+	BothLandings
+	t('1,0,0)
+	s(slopeLength,'1,0)
+	rotate(rel,scope,0,stairRotationDown,0)
+	split(y) {stairsWidth: StairAssembly | chuteWidth: ChuteAssembly}
+	
+
+BothLandings -->
+		split(y) {stairsWidth: StairLanding | railingThickness: StairLandingRailing2|
+		chuteWidth: [case showChute: ChuteLanding else: NIL]}
+
+StairLanding -->
+	split(x) {railingThickness: StairLandingRailing1 | ~1: StairLandingFloor |
+		stairDistOnRailAdjusted: NIL}
+
+StairLandingFloor -->
+	extrude(-mainSleeve/4)
+	StairRubber
+
+StairLandingRailing1 -->
+	[extrude(-mainSleeve/2) BrightMetalTexture]
+	extrude(railingHeight)
+	split(y){~0.3: StairLandingRailing1Balusters | 
+		railingThickness: Banister |
+		~0.6: StairLandingRailing1Balusters |
+		railingThickness: Banister
+	}
+
+
+
+
+	
+	
+#	~1: StairLandingRailing1Balusters | railingThickness: Banister}
+	
+	
+	
+	
+	#DirtyEdgeMetalLighterTexture
+	
+const ballusterSpacing = 0.5
+StairLandingRailing1Balusters --> 
+	split(z) {~ballusterSpacing: NIL | railingThickness: Baluster}* #| ballusterSpacing: NIL} 
+
+
+Banister --> BrightMetalTexture
+
+Baluster --> BrightMetalTexture
+
+StairLandingRailing2 -->
+	[extrude(-mainSleeve/2) BrightMetalTexture]
+	extrude(railingHeight)
+	split(y){~0.3: StairLandingRailing2Balusters | 
+		railingThickness: Banister |
+		~0.6: ExtraSLR2B StairLandingRailing2Balusters |
+		railingThickness: Banister
+	}
+
+
+ExtraSLR2B --> 
+	t(scope.sx,-railingThickness,0)
+	ExtraSLR2B2
+	t(0,0,stairsWidth + railingThickness)
+	ExtraSLR2B2
+	
+	
+ExtraSLR2B2 -->
+	s(ballusterSpacing + railingThickness,scope.sy + (2 * railingThickness),'1)
+	split(y) {railingThickness: Banister | 
+		~1: split(x) {~1: NIL | railingThickness: Baluster} | 
+		railingThickness: Banister}
+		
+		
+StairLandingRailing2Balusters --> 
+	split(x) {{railingThickness: Baluster | ~ballusterSpacing: NIL}* | railingThickness: Baluster} 
+
+	
+BrightMetalTexture --> DirtyEdgeMetalLighterTexture
+
+ChuteLanding --> X.
+
+
+const railWidth = 0.08 
+
+StairAssembly -->
+	split(y) {railWidth: RailStart | ~1: StairSplits | railWidth: RailStart}
+
+const stairDistOnRail = 0.4
+const stairCount = rint(slopeLength / stairDistOnRail)  
+const stairDistOnRailAdjusted = slopeLength / stairCount
+const stairThickness = 0.04
+#const stairDepth = 0.6
+
+StairSplits -->
+	rotate(rel,scope,0,0,180)
+	center(xy)
+	split(x) {stairDistOnRailAdjusted: Stair}*
+
+Stair -->
+	case split.index == (split.total - 1): 
+		Stair2
+		t(stairDistOnRailAdjusted,0,0)
+		Stair2
+	else:
+		Stair2
+
+Stair2 -->
+	rotate(rel,scope,0,stairSlope,0)
+	Stair3
+Stair3 -->
+	#s(stairDepth,'1,0) 
+	#center(x)
+	t(0,0,-stairThickness/2)
+	extrude(stairThickness)
+	Stair4
+Stair4 -->
+	case split.index == 0: 
+		StairBottom
+		StairDetail
+	else:
+		StairDetail
+
+StairBottom -->
+	comp(f){bottom: LowerLandingWheels }
+
+
+StairDetail -->
+	split(x) {stairThickness: YellowStairEdge | ~1: StairRubber}
+
+YellowStairEdge -->
+	comp(f){all: YellowStairEdge2}
+	
+YellowStairEdge2 -->
+	setupProjection(0,scope.xy,0.1,0.1)
+	projectUV(0)
+	texture("Jetway/YellowOrangeBumper.jpg")
+
+StairRubber -->
+	comp(f){all:
+		setupProjection(0,scope.xy,0.4,0.4)
+		projectUV(0) 
+		texture("Jetway/RubberFloor.jpg")
+		X.
+	}
+				
+RailStart --> 
+	StairHingeRailTop
+	StairHingeRailBottom
+	
+const stairHingeRailTopHeight = 0.08
+StairHingeRailTop -->
+	t(0,0,-stairHingeRailTopHeight/2)
+	extrude(stairHingeRailTopHeight)
+	comp(f){top: DirtyEdgeMetalLighterTexture StairRailings | all: DirtyEdgeMetalLighterTexture}
+	
+StairRailings -->
+	extrude(railingHeight)
+	s('1,'1,railingThickness)
+	center(z)
+	split(y){~0.3: StairLandingRailing2Balusters | 
+		railingThickness: Banister |
+		~0.6: StairLandingRailing2Balusters |
+		railingThickness: Banister
+	}
+	
+	#split(y) {railingThickness: Banister | 
+	#	~1: split(x) {~1: NIL | railingThickness: Baluster} | 
+	#	railingThickness: Banister}
+			
+	
+	
+	
+StairHingeRailBottom -->
+	# Extra rotations to avoid do the math.
+	rotate(rel,scope,0,0,180)
+	center(xy)
+	rotate(rel,scope,0,stairSlope,0) 
+	t(stairDistOnRailAdjusted,0,0)
+	rotate(rel,scope,0,-stairSlope,0)
+	t(0,0,-stairHingeRailTopHeight/2)
+	extrude(stairHingeRailTopHeight)
+	DirtyEdgeMetalLighterTexture
+
+
+#const lowerLandingDepth = 0.6
+#MakeLowerLanding -->
+	#color(1,1,0)
+	#rotate(rel,scope,0,0,180)
+	#center(xy)
+	#rotate(rel,scope,0,stairSlope,0)
+	#s(lowerLandingDepth,'1,0)
+	#t(0,0,-stairThickness)
+	#LowerLandingWheels
+	#extrude(stairThickness)
+	#X.
+	
+LowerLandingWheels -->
+	split(x){~1: NIL | lowerLandingWheelDiameter: LowerLandingWheels2 | ~1: NIL}
+
+const lowerLandingWheelDiameter = (mainSleeve - stairThickness) * 0.9
+const lowerLandingWheelWidth = 0.1
+
+LowerLandingWheels2 -->
+	split(y){lowerLandingWheelWidth: NIL | 
+	~1: WheelHolders LowerLandingWheels3 | 
+	lowerLandingWheelWidth: NIL}
+	
+LowerLandingWheels3 -->
+	t(0,0,(mainSleeve - (stairThickness / 2)))
+	reverseNormals
+	extrude(lowerLandingWheelDiameter)
+	comp(f) {front: LowerLandingWheel | back: LowerLandingWheel}
+
+WheelHolders -->
+	split(y){lowerLandingWheelWidth / 2: WheelHolder | 
+	~1: NIL | 
+ 	lowerLandingWheelWidth / 2: WheelHolder}
+
+WheelHolder --> roofGable(65,0,0,false,0)
+
+LowerLandingWheel --> 
+	color(0,0,0)
+	LowerLandingWheelHubCap
+	extrude(lowerLandingWheelWidth)
+	i(assetPipe32)
+	X.
+
+LowerLandingWheelHubCap -->
+	t(0,0,lowerLandingWheelWidth)
+	s('0.8,'0.8,0)
+	center(xy)
+	color(1,1,1)
+	extrude(0.01)
+	i(assetPipe32)
+	Z.
+
+ChuteAssembly -->
+	case showChute:
+		t(0,railingThickness,0)
+		color(0,1,1)
+	else:	
+		NIL
+
+
+BoardingPivotRoomFixed_Top --> 
+	extrude( mainSleeve ) 
+	i(assetPipe32)
+	split(x){
+		BoardingPivotRoomRadius - halfPivotRoom: NIL |
+		~1: DirtyEdgeMetalLighterTexture
+	}
+	
+PivotRoomRollDoorTexture -->
+	comp(f){all:
+		setupProjection(0,scope.xy,2,scope.sy)
+		projectUV(0) 
+		texture("Jetway/RollerWalls01.jpg")
+		X.
+	}		
+
+DirtyEdgeMetalTexture -->
+	comp(f){all:
+		setupProjection(0,scope.xy,scope.sx,scope.sy) # Edge to edge.
+		projectUV(0) 
+		texture("Jetway/DirtyEdgeMetal.jpg")
+		X.
+	}	
+
+DirtyEdgeMetalDarkerTexture -->
+	comp(f){all:
+		setupProjection(0,scope.xy,scope.sx,scope.sy) # Edge to edge.
+		projectUV(0) 
+		texture("Jetway/DirtyEdgeMetalDarker.jpg")
+		X.
+	}	
+
+DirtyEdgeMetalEvenDarkerTexture -->
+	comp(f){all:
+		setupProjection(0,scope.xy,scope.sx,scope.sy) # Edge to edge.
+		projectUV(0) 
+		texture("Jetway/DirtyEdgeMetalEvenDarker.jpg")
+		X.
+	}	
+
+DirtyEdgeMetalLighterTexture -->
+	comp(f){all:
+		setupProjection(0,scope.xy,scope.sx,scope.sy) # Edge to edge.
+		projectUV(0) 
+		texture("Jetway/DirtyEdgeMetalLighter.jpg")
+		X.
+	}	
+
+const pivotToPlaneAdapterGap = BoardingPivotRoomRadius - (halfPivotRoom * 1.2)
+const pivotToPlaneAdapterWidth = pivotRoomDiameter 
+
+BoardingPivotRoomPivotable -->	
+	rotate(rel,scope,0,0,- planeDoorPivotRotationConstrained )	
+	center(xy)
+	#Triangle OLD
+	s(BoardingPivotRoomRadius * 2, BoardingPivotRoomRadius * 2, 0)
+	center(xy)
+	PlaneAdapterStart
+
+/*
+#OLD TRIANGLE CODE.
+Triangle --> color(1,0,0) X.
+	#t(BoardingPivotRoomRadius,0, mainSleeve)
+	#TriangleRotate
+TriangleRotate -->
+	rotate(rel,scope,0,0,45)	
+	center(xy)
+	TriangleRotate2
+TriangleRotate2 -->
+	rotateScope(0,0,-45)
+	split(x){'0.5: TriangleRotate3} 
+TriangleRotate3 -->
+	s(scope.sx + pivotToPlaneAdapterGap, pivotRoomDiameter, 0)
+	center(y)
+	extrude(interiorWallHeight)
+	DirtyEdgeMetalLighterTexture
+*/
+
+const PlaneAdapterMountDepth = 0.3
+const PlaneAdapterDepth = 0.7 
+const arbitraryOne = 1
+
+PlaneAdapterStart -->
+	t((BoardingPivotRoomRadius * 2) + pivotToPlaneAdapterGap,0,0)
+	s(PlaneAdapterDepth,'1,0)
+	extrude(extendingArmHeight) 
+	comp(f) {left: TriangleStart | right: Smush | top: AdapterHallFloor AdapterHallRoof}
+
+const triangleSide = (BoardingPivotRoomRadius + pivotToPlaneAdapterGap) / sin(60)
+
+TriangleStart -->
+	split(x) {
+		~1: DirtyEdgeMetalLighterTexture | 
+		triangleSide: Triangle3 | 
+		~1: DirtyEdgeMetalLighterTexture}   
+
+Triangle3 -->
+	split(y) {
+		mainSleeve: DirtyEdgeMetalLighterTexture | 
+		~1: Triangle4 | 
+		mainSleeve: DirtyEdgeMetalLighterTexture}   
+
+const faceClashTolerance = 0.02
+const outerRadius = BoardingPivotRoomRadius + pivotToPlaneAdapterGap
+const topHalfTriangleWithSleeve = (BoardingPivotRoomRadius - mainSleeve) * cos(30)
+const bottomHalfTriangleWithSleeve = outerRadius - topHalfTriangleWithSleeve
+# No sleeve:
+const topHalfTriangle = BoardingPivotRoomRadius * cos(30)
+const bottomHalfTriangle = outerRadius - topHalfTriangle
+
+ 
+Triangle4 -->
+	roofGable(60,0,0,false,0)
+	s('1,outerRadius,'1)
+	# XX Go sleeve less for now, until adding wall thickness:
+	split(y){bottomHalfTriangle: Triangle5 | ~1: NIL }
+	#split(y){bottomHalfTriangleWithSleeve: Triangle5 | ~1: NIL }
+
+	
+Triangle5 -->
+	 comp(f){top: NIL | bottom: NIL | left: TriangleWall |
+		right: TriangleWall | front: TriangleFloor | back: TriangleRoof}
+	
+TriangleWall -->
+	X.
+TriangleRoof -->
+	TriangleRoofOutside.
+	t(0,0,-faceClashTolerance) 
+	TriangleRoofInside.
+
+TriangleFloor -->
+	TriangleFloorOutside.
+	t(0,0,-faceClashTolerance) 
+	TriangleFloorInside.
+
+AdapterHall -->
+	comp(f){right: Smush | left: NIL | top: AdapterHallFloor AdapterHallRoof}
+
+AdapterHallFloor --> 
+	t(0,0,-extendingArmHeight)
+	split(y){
+		mainSleeve: extrude(extendingArmHeight) DirtyEdgeMetalLighterTexture | 
+		~1: AdapterHallFloor2 | 
+		mainSleeve: extrude(extendingArmHeight) DirtyEdgeMetalLighterTexture}   
+
+const yellowPlaneBumper = mainSleeve
+
+AdapterHallFloor2 -->
+	s(scope.sx + smush1,'1,0)
+	split(x){
+		~1: 
+		extrude(mainSleeve) 
+		AdapterHallFloorTexture
+		|
+		yellowPlaneBumper:
+		extrude(mainSleeve)
+		YellowBumperTexture
+	}
+
+YellowBumperTexture -->
+	comp(f){all: YellowBumperTexture2}
+	
+YellowBumperTexture2 -->	
+	offset(-0.005)
+	comp(f){border: color(0,0,0) X. | inside: YellowBumperTexture3} 
+
+YellowBumperTexture3 -->
+	setupProjection(0,scope.xy,1,1)
+	projectUV(0)
+	texture("Jetway/YellowOrangeBumper.jpg")
+
+
+
+AdapterHallFloorTexture -->
+	comp(f){top:
+		setupProjection(0,scope.xy,0.7,0.7)
+		projectUV(0) 
+		texture("Jetway/RubberFloor.jpg")
+		X.
+		| all: X.
+	}		
+		
+		
+AdapterHallRoof --> 
+	SmushTop
+	extrude(mainSleeve)
+	X.
+	#comp(f){right: X.}
+	
+
+SmushTop -->
+	t(scope.sx,0,0)
+	s(smush5,'1,0)
+	split(x){~1: SmushTopAccordian | 
+		mainSleeve/4: roofShed(45,3) s('1,mainSleeve/2,'1) SmushTexture |
+		mainSleeve/4: extrude(mainSleeve/2) SmushTexture}
+
+const accordianCount = 10
+
+SmushTopAccordian -->
+	split(x){scope.sx / accordianCount: SmushTopOneAccordian}*
+SmushTopOneAccordian -->
+	roofGable(45)
+	s('1, mainSleeve/2, '1)
+	SmushTexture
+
+Smush -->
+	split(x){mainSleeve: SmushSide("left") | ~1: SmushCenter | mainSleeve: SmushSide("right")}   
+	
+SmushCenter --> NIL
+
+
+getSmush(plane,level) = 
+	case plane == "A380, upper deck":
+		case level == 1: 0.05
+		case level == 2: 0.2
+		case level == 3: 0.6
+		case level == 4: 1.2
+		case level == 5: 2.2
+		else: 0
+	case plane == "A380, lower deck":
+		case level == 1: 0.5
+		case level == 2: 0.25
+		case level == 3: 0.15
+		case level == 4: 0.08
+		case level == 5: 0.19
+		else: 0
+	case plane == "B777":
+		case level == 1: 0.0
+		case level == 2: 0.1
+		case level == 3: 0.2
+		case level == 4: 0.5
+		case level == 5: 1.3
+		else: 0
+	case plane == "B737":
+		case level == 1: 0.3
+		case level == 2: 0.15
+		case level == 3: 0.23
+		case level == 4: 0.6
+		case level == 5: 1.5
+		else: 0
+	else: # Default case, when no airplane match.
+		case level == 1: 0.0
+		case level == 2: 0.1
+		case level == 3: 0.2
+		case level == 4: 0.3
+		case level == 5: 0.5
+		else: 0
+	
+const smushStart = 0.5
+const smush1 = getSmush( AircraftType , 1) + smushStart
+const smush2 = getSmush( AircraftType , 2) + smushStart 
+const smush3 = getSmush( AircraftType , 3) + smushStart
+const smush4 = getSmush( AircraftType , 4) + smushStart
+const smush5 = getSmush( AircraftType , 5) + smushStart
+
+smaller(number1,number2) = case number1 > number2: number2 else: number1
+difference(number1,number2) = abs(number1 - number2) 
+smushAngle(number1,number2,height) = atan(difference(number1,number2)/height)
+
+SmushSide(side) -->  #X Not currently using side, but left it in until done, since it might come up.
+	split(y){'0.25 : Smush(smush1,smush2) | 
+			'0.25 : Smush(smush2,smush3) | 
+			'0.25 : Smush(smush3,smush4) | 
+			'0.25 : Smush(smush4,smush5)} 
+
+Smush(lower,upper) -->
+	extrude(smaller(lower,upper))
+	comp(f){top: SmushRoofShed(lower,upper) | side: SmushTextureLowest} 
+		
+SmushRoofShed(lower,upper) -->
+	case lower > upper: 
+		rotate(rel,scope,0,0,180)
+		center(xy)
+		SmushRoofShed2(lower,upper)
+	case upper > lower: 
+		SmushRoofShed2(lower,upper)
+	else:	 
+		SmushTexture #???
+
+SmushRoofShed2(lower,upper) -->
+	roofShed(smushAngle(lower,upper,scope.sy))
+	comp(f){top: color(0,0,0) X.| side: SmushTexture}
+	
+SmushTextureLowest -->
+	alignScopeToGeometry(zUp, any, world.lowest)
+	setupProjection(0,scope.xy,1,1)
+	projectUV(0)
+	texture("Jetway/Smushy1.jpg")
+
+SmushTexture -->
+	alignScopeToAxes(y)
+	setupProjection(0,scope.xy,1,1)
+	projectUV(0)
+	texture("Jetway/Smushy1.jpg")
+	
+#################################################
+# WHEEL ASSEMBLY
+#################################################
+
+# For wheel assembly:
+# Starts and ends at (wheelSleeveThickness / 2) cut off from both ends.
+attr wheelMountPoint = 0.7
+
+attr wheelDiameter = 1
+attr wheelSleeveBelowArm = 1  
+attr wheelSleeveAboveArm = 1  
+@Range(0.1,0.9)
+attr strutSleeveThickness = 0.4
+
+const strutThickness = strutSleeveThickness * 0.75 
+
+#Range of movement of the wheel mount:
+const wheelMountRange = extendingArmSectionLength - strutSleeveThickness
+const halfStrutSleeveThickness = strutSleeveThickness / 2
+const leftOfMountPoint = halfStrutSleeveThickness + (wheelMountRange * (1 - wheelMountPoint))  
+const wheelAssemblyHypotenuse = halfPivotRoom + leftOfMountPoint
+const wheelHeightAbovePlaneDoorHeight = wheelAssemblyHypotenuse * sin(extendingArmTilt)
+const wheelAssemblyHeightUnderSlope = wheelHeightAbovePlaneDoorHeight + PlaneDoorHeight
+const wheelPerpendicularExtensionDown = wheelAssemblyHeightUnderSlope / cos(extendingArmTilt)
+
+
+const wheelRadius = wheelDiameter / 2  
+const wheelAxleFromGroundOnPerp = wheelRadius / cos(extendingArmTilt)
+const excessPerpBelowWheel = wheelAxleFromGroundOnPerp - wheelRadius 
+
+# X not sure of thise yet:
+const wheelSleeveHeight = wheelSleeveBelowArm + extendingArmHeight + wheelSleeveAboveArm
+
+
+WheelMount -->
+	# 100% is at end of arm minus halfStrutSleeveThickness.
+	# 0% is at beginning minus halfWheelSleeveThickness. 
+	split(x) {leftOfMountPoint: WheelAssemblyPlaneComp | ~1: NIL}
+
+WheelAssemblyPlaneComp -->
+	extrude(wheelPerpendicularExtensionDown)
+	comp(f){right: WheelAssemblyPlane}
+	
+WheelAssemblyPlane -->
+	s(wheelAssemblyWidth, '1, 0)
+	center(x) 
+	Wheels
+	#color(0,0,0)
+	
+
+Wheels -->
+	split(y){
+		~1: NIL |
+		strutBeamHeight: StrutBeam |
+		wheelToStrutBeamClearance: NIL | 
+		wheelDiameter: WheelPlane | 
+		excessPerpBelowWheel: NIL
+	}
+
+const steeringDistanceToBottomOfStrutBeam = assemblySizeBelowTopOfStrutBeam - strutBeamHeight
+const steeringDistanceToTopOfAxleBox = excessPerpBelowWheel + wheelRadius + (wheelAxleBoxHeight / 2)
+const steeringConnectorGap = steeringDistanceToBottomOfStrutBeam - steeringDistanceToTopOfAxleBox
+
+
+
+StrutBeam -->
+	t(0,0,-strutBeamDepth/2)
+	extrude(strutBeamDepth)
+	comp(f) {front: StrutBeamTop}
+	DirtyEdgeMetalDarkerTexture
+	
+StrutBeamTop -->
+	split(x){
+		strutSleeveThickness: StrutStart |
+		extendingArmWidth: NIL |
+		strutSleeveThickness: StrutStart
+	}
+
+StrutStart -->
+	StrutSleeve
+	StrutPiston
+	
+StrutPiston -->
+	offset(-(strutSleeveThickness - strutThickness) / 2)
+	comp(f){inside: StrutPiston2}
+
+const strutPistonGap = wheelPerpendicularExtensionDown - assemblySizeBelowTopOfStrutBeam  
+const assemblySizeBelowTopOfStrutBeam = excessPerpBelowWheel + wheelDiameter + wheelToStrutBeamClearance + strutBeamHeight 
+# X rename wheelSleeveBelowArm
+const strutPistonExposed = strutPistonGap - wheelSleeveBelowArm 
+
+StrutPiston2 -->
+	extrude(strutPistonExposed)
+	DirtyEdgeMetalEvenDarkerTexture
+
+StrutSleeve -->
+	t(0,0,strutPistonExposed)
+	extrude(wheelSleeveBelowArm + extendingArmHeight + wheelSleeveAboveArm)
+	DirtyEdgeMetalTexture
+
+const wheelAssemblyWidth = (strutSleeveThickness * 2) + extendingArmWidth
+const wheelToStrutBeamClearance = wheelRadius / 4
+const strutBeamHeight = strutSleeveThickness
+const strutBeamDepth = strutBeamHeight
+const strutBeamWidth = wheelAssemblyWidth
+
+
+
+const wheelThicknessClearance = 0.1
+const wheelThickness = strutSleeveThickness 
+const wheelAxleBoxWidth = extendingArmWidth - (wheelThicknessClearance * 2)
+const wheelAxleBoxHeight = wheelRadius
+const wheelAxleBoxDepth = wheelRadius
+const axleDiameter = 0.2
+
+WheelPlane -->
+	split(x){
+		wheelThickness: WheelLeft |  
+		wheelThicknessClearance: Axle | 
+		wheelAxleBoxWidth : WheelAxleBox | 
+		wheelThicknessClearance: Axle | 
+		wheelThickness: WheelRight
+	}  
+
+# X I don't like how the wheels are built.
+WheelLeft  -->
+	t(0,0,-wheelDiameter/2)
+	color(1,0,0)
+	extrude(wheelDiameter)
+	#rotateScope(0,90,0)
+	comp(f) {left: WL2 } 
+	
+WL2 -->
+	extrude(wheelThickness)
+	i(assetPipe32)
+	t(0,-wheelThickness, 0)
+	color(0,0,0)
+	Wheel.
+	t(0,wheelThickness, 0)
+	s('hubPerWheelDiameter, 'hubPerWheelWidth ,'hubPerWheelDiameter)
+	center(xz)
+	color(0.5,0.5,0.5)
+	Hub.
+
+
+
+
+	
+WheelRight  -->
+	t(0,0,-wheelDiameter/2)
+	color(1,0,0)
+	extrude(wheelDiameter)
+	#rotateScope(0,90,0)
+	comp(f) {right: WR2 } 
+
+const hubPerWheelDiameter = 1/2 
+const hubPerWheelWidth = 1/10 
+
+WR2 -->
+	extrude(wheelThickness)
+	i(assetPipe32)
+	t(0,-wheelThickness, 0)
+	color(0,0,0)
+	Wheel.
+	t(0,wheelThickness, 0)
+	s('hubPerWheelDiameter, 'hubPerWheelWidth ,'hubPerWheelDiameter)
+	center(xz)
+	color(0.5,0.5,0.5)
+	Hub.
+
+
+WheelAxleBox -->
+	s('1,wheelAxleBoxHeight,0)
+	center(y)
+	t(0,0,-wheelAxleBoxDepth/2)
+	extrude(wheelAxleBoxDepth)
+	comp(f){front: SteeringConnector}
+	DirtyEdgeMetalTexture
+
+SteeringConnector -->
+	split(x){~1: NIL | strutBeamDepth: SteeringConnector2 | ~1: NIL}
+SteeringConnector2 -->
+	extrude(steeringConnectorGap)
+	#split(y)
+	s('1.4,'1,'1.4)
+	center(xz)
+	i(assetPipe32)
+	DirtyEdgeMetalEvenDarkerTexture
+	SteeringConnector3
+	SteeringConnector4
+	
+SteeringConnector3 -->	
+	t(0,-(scope.sy-0.05),0)
+	s('1.6,'1,'1.6)
+	center(xz)
+	DirtyEdgeMetalDarkerTexture
+
+SteeringConnector4 -->
+	t(0,scope.sy -0.05,0)
+	s('1.2,'0.8,'1.2)
+	center(xz)
+	DirtyEdgeMetalDarkerTexture
+	
+Axle -->
+	s('1,axleDiameter,0)
+	center(y)
+	t(0,0,-axleDiameter/2)
+	extrude(axleDiameter)
+	X.
+
+RightWheelSleeve -->
+#	t(0,-wheelSleeveThickness,0)
+	WheelSleeve
+
+LeftWheelSleeve -->
+#	t(0,extendingArmWidth,0)
+	WheelSleeve
+
+WheelSleeve -->
+	t(0,0,wheelSleeveBelowArm)
+	extrude(-wheelSleeveHeight)
+	
+
+
+########################################################
+
+TEMPDebug -->
+	print("slopeHeight = " + slopeHeight) 
+	#print("slopeExtension = " + slopeExtension) 
+	#print("slopeLength = " + slopeLength) 
+	print("armExtension = " + armExtension) 
+	#print("extendingArmWidth = " + extendingArmWidth) 
+	print("halfPivotRoom = " + halfPivotRoom)
+	print("extendingArmTilt = " + extendingArmTilt)
+	print("minExtension = " + minExtension)
+	print("maxExtension = " + maxExtension) 
+	print("extendingArmSectionLength = " + extendingArmSectionLength) 
+
+TEMPGroundPlaneForDebugging -->
+	s(100,0,100) center(xz) color(0.1,0.1,0.1)
+
+Rand -->	
+	color(rand,rand,rand) 
+
+
+###################################################
+# In reality, the gate, plane and which door would drive these (a 3-field key). 
+
+const defaultExtendingArmRotation = 0
+getExtendingArmRotation(plane) =
+	case plane == "A380, upper deck": -50
+	case plane == "A380, lower deck": -21
+	case plane == "B777": -22.3
+	case plane == "B737": -34
+	else: defaultExtendingArmRotation
+
+const defaultExtension = 0
+getExtension(plane) =
+	case plane == "A380, upper deck": 42.5
+	case plane == "A380, lower deck": 20
+	case plane == "B777": 26.7
+	case plane == "B737": 23.6
+	else: defaultExtension
+
+const defaultPlaneDoorHeight = 4
+getPlaneDoorHeight(plane) =
+	case plane == "A380, upper deck": 7.2
+	case plane == "A380, lower deck": 4.6
+	case plane == "B777": 4.8
+	case plane == "B737": 3.1
+	else: defaultPlaneDoorHeight
+
+const defaultPlaneDoorPivotRotation = 0
+getPlaneDoorPivotRotation(plane) =
+	case plane == "A380, upper deck": -44.5
+	case plane == "A380, lower deck": -72
+	case plane == "B777": -69.4
+	case plane == "B737": -49
+	else: defaultPlaneDoorPivotRotation
+
+const defaultMaxExtension = 40
+getMaxExtension(plane) =
+	case plane == "A380, upper deck": 50
+	case plane == "A380, lower deck": 30
+	case plane == "B777": 40
+	case plane == "B737": 40
+	else: defaultMaxExtension
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
