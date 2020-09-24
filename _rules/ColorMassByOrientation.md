@@ -2,7 +2,7 @@
 layout: rules
 category: rule
 Name: ColorMassByOrientation
-Type: Building
+Type: Tools
 Alias: Color Mass By Orientation
 Attribution: Esri Inc.
 Code: Y

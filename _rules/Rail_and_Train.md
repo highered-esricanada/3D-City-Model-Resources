@@ -2,7 +2,7 @@
 layout: rules
 category: rule
 Name: Rail_and_Train
-Type: Infrastructure
+Type: Transport
 Alias: Rail and Train
 Attribution: Esri Japan
 Code: N

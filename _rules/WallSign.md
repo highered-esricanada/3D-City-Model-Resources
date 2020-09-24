@@ -2,7 +2,7 @@
 layout: rules
 category: rule
 Name: WallSign
-Type: Building
+Type: Infrastructure
 Alias: WallSign
 Attribution: Esri Inc.
 Code: Y

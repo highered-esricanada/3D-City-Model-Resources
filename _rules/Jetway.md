@@ -2,7 +2,7 @@
 layout: rules
 category: rule
 Name: Jetway
-Type: Building
+Type: Transport
 Alias: Jetway
 Attribution: Esri Inc.
 Code: Y
