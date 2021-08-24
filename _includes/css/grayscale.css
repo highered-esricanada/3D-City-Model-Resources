@@ -68,8 +68,8 @@ hr.title{
     margin-right: 10px;
 }
 
-.attribution{
-    margin-bottom: 10px;
+#attributionBlock{
+    height: 25px;
 }
 
 .ruleDescription{
@@ -78,8 +78,8 @@ hr.title{
 }
 
 .linkText{
-    float:left;
-    font-size: 14px;
+    float:right;
+    font-size: 16px;
     margin-left: 8px;
 }
 
@@ -643,3 +643,153 @@ body {
     padding-right: 15px;
 }
 
+.gallery-image-a {
+    display: block;
+    height: 100px;
+    min-width: 100px;
+    background-position: center center;
+    transition: ease all 950ms;
+    background-repeat: no-repeat;
+    box-sizing: border-box;
+    border: 10px solid #fff;
+  }
+
+  .menu-button{
+      display:inline
+  }
+
+  model-viewer, #renderCanvas{
+      width: 100%;
+      height: 300px;
+      touch-action: none;
+      outline: none;
+  }
+
+  #renderCanvas{
+    display: none;
+}
+
+  .galleryContainer{
+    /*max-height: 980px;*/
+    overflow-y: hidden;
+    overflow-x: hidden;
+    float: left;
+    width: 100%;
+
+  }
+
+  .categoryLabel{
+    width: 30px;
+    float: left;
+    margin-top: 8px;
+    text-align: center;
+    margin-right: 12px;
+    font-size: 16px;
+    color: #777;
+  }
+
+  #realRows{
+    display:none;
+  }
+
+  .filters{
+    float: left
+  }
+  
+  .filters ul{
+    list-style: none;
+    margin: 4px 0px;
+    float: left;
+  }
+  .filters ul li{
+    float: left;
+    margin-top: 5px;
+    text-align: center;
+    margin-right: 5px;
+    padding: 0 5px 8px 5px;
+    font-weight: 700;
+    font-size: 16px; 
+    cursor: pointer;
+    position: relative;
+    margin-bottom: -2px;
+    color: #777;
+    transition: 0.3s;
+    height: 25px;
+  }
+  
+  .filters ul li:hover{
+    color: #337ab7;
+  }
+  .filters ul li.is-checked{
+    border-bottom: 2px solid #337ab7;
+  }
+  .filters ul li:last-child{
+    margin-right: 0;
+  }
+   
+
+  .grid-item {
+    width: 100px;
+    float: left;
+    cursor: pointer
+  }
+
+  .grid .grid-item h1{
+    background: #EEEEEE;
+    height: 150px;
+    line-height: 150px;
+    color: white;
+    font-size: 3em;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .badge-container{
+    height: 30px;
+    position: absolute;
+    z-index: 999
+  }
+
+  .indicator{
+    font-size: 12px;
+    color: #000;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    background-color: #FFF;
+    border-radius: 5px;
+    width: 15px;
+    float: left;
+    margin: 2px;
+  }
+
+  .download{
+    cursor: pointer;
+    float: right;
+    font-size: 16px;
+    margin-right: 26px;
+  }
+
+  .downloadLabel{
+    margin-right: 5px;
+    float: right;
+  }
+
+ .indicator {
+    position: relative;
+    cursor: pointer;
+    border: 1px solid #cdc8c8;
+  }
+
+  .indicator:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 0;
+    top:25px;
+    padding: 2px;
+    color: black;
+    z-index: 9999;
+    background: white;
+    -webkit-box-shadow: 2px 2px 2px 1px #AAA; 
+    box-shadow: 2px 2px 2px 1px #AAA;
+  }

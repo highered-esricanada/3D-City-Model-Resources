@@ -1,76 +1,140 @@
 <html> 
   {% include head.html %}
-
+  <script type="module" src="js/model-viewer.min.js"></script>
+  <script src="js/babylon.js"></script>
+  <script src="js/babylon.gui.min.js"></script>
+  <script src="js/babylonjs.loaders.min.js"></script>
+  <script src="js/jszip.min.js"></script>
+  <script src="js/FileSaver.min.js"></script>
+  <script src="js/jszip-utils.js"></script>
   <body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
     {% include nav.html %}
     {% include header.html %}
-    <!--a href="../../" style="font-size:smaller;">Home</a-->
     <p class="container" style="margin-top: 6px; font-size: 22px;">Find and preview free rule packages, tutorials, and resources for 3D GIS and CityEngine projects.</p>
     <section id="links" class="container">
-      <h2 id="collection">CGA Rules</h2><hr class="title">
-    {% assign rules = site.rules | where:"category", "rule"  %}
-    {% assign categories = site.category_order %}
-
-    
-
-    {% for category in site.category_order %}
+      <h2 id="collection">CGA Rules</h2><hr class="title"> {% assign rules = site.rules | where:"category", "rule"  %}{% assign categories = site.category_order %} {% for category in site.category_order %}
       <br/><a data-toggle="collapse" data-target="#{{ category }}Section"><img class="chevron" src="img/expand_collapse.svg"/><h3 id = "{{ category }}">{{ category }}</h3></a><br/>
-      <div class="collapsed collapse in" id="{{ category }}Section">
-      {% assign rules = site.rules | where:"category", "rule" | where:"Type", category %}
-      {% for rule in rules %}
-            <!--p style="clear:both;"-->
-            
-              <div class="row content">
-                
-                <div class="col-3"><img src="RuleRepository/images/{{ rule.Name }}.png" style="margin:0 .5em .25em 0; float: left;" class="rulePreview"></div>
-                <div class="col-sm-8">
-                
-                  <h4 class = "ruleName">{{ rule.Alias }} </h4><i class="attribution"> {{ rule.Attribution }}</i>
-           
-               
-                  <span class="ruleDescription">{{ rule.Description }}</span>
-                 
-              
+      <div class="collapsed collapse in" id="{{ category }}Section"> {% assign rules = site.rules | where:"category", "rule" | where:"Type", category %} {% for rule in rules %}  
+          <div class="row content">         
+            <div class="col-3"><img src="RuleRepository/images/{{ rule.Name }}.png" style="margin:0 .5em .25em 0; float: left;" class="rulePreview"></div>
+            <div class="col-sm-8">
+              <h4 class = "ruleName">{{ rule.Alias }} </h4><i class="attribution"> {{ rule.Attribution }}</i>
+              <span class="ruleDescription">{{ rule.Description }}</span>
+            </div>
+            <div class="col-3"  style="padding-left:19px; float:left">
+                  <div class="row" style="height: 30px;">
+                  {%- if rule.RPK != "Y" -%}
+                  <a href="{{ rule.RPK }}" target="_blank"><img class="icon" src="img/download.svg"/><span class="linkText">Download</span></a>
+                  {%- else -%}
+                  <img class="icon fade" src="img/download.svg"/><span class="linkText inactive">Download</span>
+                  {%- endif -%}
+                  </div>
+                  <div class="row" style="height: 30px;">
+                  {%- if rule.Code != "N" -%}
+                  <a href="rules/{{ rule.Name }}/index.html" target="_blank"><img class="icon" src="img/code.svg"/><span class="linkText">View Code</span></a>
+                  {%- else -%}
+                  <img class="icon fade" src="img/code.svg"/><span class="linkText inactive">View Code</span>
+                  {%- endif -%}
                 </div>
-                <div class="col-3"  style="padding-left:19px; float:left">
-                      <div class="row" style="height: 30px;">
-                      {% if rule.RPK != "Y" %}
-                      <a href="{{ rule.RPK }}" target="_blank"><img class="icon" src="img/download.svg"/><span class="linkText">Download</span></a>
-                      {% else %}
-                      <img class="icon fade" src="img/download.svg"/><span class="linkText inactive">Download</span>
-                      {% endif %}
-                      </div>
-      
-                      <div class="row" style="height: 30px;">
-                      {% if rule.Code != "N" %}
-                      <a href="rules/{{ rule.Name }}/index.html" target="_blank"><img class="icon" src="img/code.svg"/><span class="linkText">View Code</span></a>
-                      {% else %}
-                      <img class="icon fade" src="img/code.svg"/><span class="linkText inactive">View Code</span>
-                      {% endif %}
-                    </div>
-                    <div class="row" style="height: 30px;">
-                      <a href="{{ rule.Name}}" class="demoLink" target="_blank"><img class="icon" src="img/demo.svg"/><span class="linkText">Demo</span></a>
-                    </div>
-                      <div class="row" style="height: 30px;">
-                      {% if rule.Video != "N" %}
-                      <a href="{{ rule.Video }}" target="_blank"><img class="icon" src="img/video.svg"/><span class="linkText">Video</span></a>
-                      {% else %}
-                      <img class="icon fade" src="img/video.svg"/><span class="linkText inactive">Video</span>
-                      {% endif %}
-                      </div>
-
-                  </ul>
+                <div class="row" style="height: 30px;">
+                  <a href="{{ rule.Name}}" class="demoLink" target="_blank"><img class="icon" src="img/demo.svg"/><span class="linkText">Demo</span></a>
                 </div>
-               
-              </div>
-              <hr>
-          
-              
-      {% endfor %} 
+                <div class="row" style="height: 30px;">
+                {%- if rule.Video != "N" -%}
+                <a href="{{ rule.Video }}" target="_blank"><img class="icon" src="img/video.svg"/><span class="linkText">Video</span></a>
+                {%- else -%}
+                <img class="icon fade" src="img/video.svg"/><span class="linkText inactive">Video</span>
+                {%- endif -%}
+                </div>
+              </ul>
+            </div>          
+          </div>
+          <hr>{% endfor %} 
+      </div> {% endfor %}
+    <h2 id="models">Models and Textures</h2><hr class="title">
+    <div class="row content" >
+      <div class="col-md-12"> 
+        <model-viewer id="modelViewer" camera-controls alt="model" src="RuleRepository/assets/StaticModels/CARLA/Buildings/block01.glb">
+        </model-viewer>
       </div>
-    {% endfor %}
-    
-    <h2 id="tutorials">Tutorials</h2><hr class="title">
+      <div class="col-md-12"> 
+        <canvas id="renderCanvas"></canvas>
+      </div>
+      <div class="col-md-12" id="attributionBlock">
+        <a class="download" id="downloadLink"><img class="icon" src="img/download.svg"><span class="linkText">Download</span></a>
+        <a href="https://creativecommons.org/licenses/by/4.0" class="download" id="licence" target="_blank">CC BY</a><span class="downloadLabel">Licence:</span>
+        <a href="https://carla.org" class="download" id="source" target="_blank">CARLA</a><span class="downloadLabel">Source:</span>
+      </div>
+      <div class="col-md-12">
+        <hr>
+        <div class="filters">
+          <div class="categoryLabel">
+            Models:
+          </div>
+          <ul>
+            <li  data-filter=".model">All</li>
+            <li class="is-checked" data-filter=".Buildings">Buildings</li>
+            <li data-filter=".Props">Props</li>
+            <li data-filter=".Street.Furniture">Street Furniture</li>
+            <li data-filter=".Recreation">Recreation</li>
+            <li data-filter=".Infrastructure">Infrastructure</li>
+            <li data-filter=".Traffic">Traffic</li>
+          </ul>
+        </div>
+        <div class="filters" style="margin-bottom: 6px;">
+          <hr>
+          <div class="categoryLabel">
+            Textures:
+          </div>
+          <ul>
+            <li data-filter=".Asphalt">Asphalt</li>
+            <li data-filter=".Concrete">Concrete</li>
+            <li data-filter=".Cliff">Cliff</li>
+            <li data-filter=".Dirt">Dirt</li>
+            <li data-filter=".Farm">Farm</li>
+            <li data-filter=".Forest">Forest</li>
+            <li data-filter=".Grass">Grass</li>
+            <li data-filter=".Metal">Metal</li>
+            <li data-filter=".Mud">Mud</li>
+            <li data-filter=".Plants">Plants</li>
+            <li data-filter=".Road">Road</li>
+            <li data-filter=".Rocks">Rocks</li>
+            <li data-filter=".Sand">Sand</li>
+            <li data-filter=".Sidewalk">Sidewalk</li>
+            <li data-filter=".Shrubs">Shrubs</li>
+            <li data-filter=".Snow">Snow</li>
+            <li data-filter=".Tiles">Tiles</li>
+            <li data-filter=".Wall">Wall</li>
+            <li data-filter=".Water">Water</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-12">
+        <div id="showingGallery" class="galleryContainer">
+          <div class="rows grid">{% for model in site.models %}{% assign a = model | split: " - " %}{% if a[1] == "Buildings" %}
+              <div class="col-md-1 grid-item {{ a[1] }} model" data-category="{{ a[1] }}">
+                  <img src="RuleRepository/images/StaticModels/{{ model }}.png" loading="lazy" class="gallery-image-a"></img>
+              </div>  {% endif %}{% endfor %}
+            </div>
+          </div>
+        <div id="gallery"  class="galleryContainer">
+          <div class="rows grid" id="realRows">{% for model in site.models %}{% assign a = model | split: " - " %}
+              <div class="col-md-1 grid-item {{ a[1] }} model" data-category="{{ a[1] }}">
+                  <img src="RuleRepository/images/StaticModels/{{ model }}.png" loading="lazy" class="gallery-image-a"></img>
+              </div>  {% endfor %}{% for material in site.materials %}{% assign b = material | split: " - " %}
+              <div class="col-md-1 grid-item material {{ b[1] }}" data-category="{{ b[1] }}"  >
+                <div class="badge-container">{% if b[4] == "1" %} 
+                  <span class="indicator" data-tooltip="Includes Specular Map">S</span>{% endif %}{% if b[3] == "1" %}
+                  <span class="indicator" data-tooltip="Includes Normal Map">B</span>{% endif %}{% if b[5] == "1"%}  
+                  <span class="indicator" data-tooltip="Includes Physically Based Rendering Map">P</span>{% endif %} 
+                </div>
+                <img src="RuleRepository/assets/Materials/{{b[0]}}/{{b[1]}}/thumb/{{ b[2] }}.png" data-type="{{ b[3]}} {{b[4]}} {{b[5]}}" loading="lazy" class="gallery-image-a"></img>
+              </div> {% endfor %}  
+          </div>
+        </div>
+      </div>
+  </div>  
+  <h2 id="tutorials">Tutorials</h2><hr class="title">
 	<div class="link_list">
 		<h3 class="subResource">CityEngine</h3>
 		<span><a target="_blank" href="https://hed.esri.ca/resourcefinder/#/title=3D%20Multipatch%20Creation%20and%20Editing%20in%20CityEngine%20and%20ArcGIS%20Pro/lang=en">3D Multipatch Creation and Editing in CityEngine and ArcGIS Pro</a></span>
@@ -100,10 +164,9 @@
 		<h3 class="subResource">Other Software</h3>
 		<span><a target="_blank" href="https://hed.esri.ca/resourcefinder/#/title=GIS%20with%20Unity%20and%20Unreal%20Engine/lang=en">GIS with Unity and Unreal Engine</a></span>
 		
-		
 		<h2 id="videos">Videos</h2><hr class="title">
 		<h3 class="subResource">CityEngine</h3>
-		<span><a target="_blank" href="https://www.3d-env.tech/">CityEngine User Meeting 2020</a></span>
+		<span><a target="_blank" href="https://www.3d-env.tech/">CityEngine User Meeting</a></span>
 		<span><a target="_blank" href="https://www.youtube.com/playlist?list=PLWGP11THb9EqP76HhWw8dFvl45-7TYE5n">Esri's CityEngine Rule of the Week</a></span>
 		<span><a target="_blank" href="https://www.youtube.com/channel/UCq_4ineLg8X0_w6uqWcWxhQ">CityEngine TV</a></span>
 		<span><a target="_blank" href="https://www.esri.com/videos/watch?videoid=t96JGUzQ2xQ">Master Planning & Architectural Site Design with CityEngine</a></span>
@@ -123,9 +186,9 @@
 		<span><a target="_blank" href="https://www.landscapeforms.com/en-us/site-furniture/pages/all-bike-racks.aspx">Bike Racks</a></span>
 		<span><a target="_blank" href="https://www.knoll.com/Typicals/search?change=true&page=1&size=25">Office Furniture</a></span>
 		<span><a target="_blank" href="https://www.turbosquid.com/Search/Index.cfm?max_price=0&min_price=0&cname=free">Free 3D Objects</a></span>
-    		<h3 class="subResource">Esri GeoDesign Summit Proceedings</h3>
-		<span><a target="_blank" href="https://proceedings.esri.com/library/userconf/geodesign21/index.html">2021 Conference</a></span>
-    		<span><a target="_blank" href="https://proceedings.esri.com/library/userconf/geodesign20/index.html">2020 Conference</a></span>
+    <h3 class="subResource">Esri GeoDesign Summit Proceedings</h3>
+    <span><a target="_blank" href="https://proceedings.esri.com/library/userconf/geodesign21/index.html">2021 Conference</a></span>
+    <span><a target="_blank" href="https://proceedings.esri.com/library/userconf/geodesign20/index.html">2020 Conference</a></span>
 		<span><a target="_blank" href="http://proceedings.esri.com/library/userconf/geodesign19/index.html">2019 Conference</a></span>
 		<span><a target="_blank" href="http://proceedings.esri.com/library/userconf/geodesign18/index.html">2018 Conference</a></span>
 		<span><a target="_blank" href="http://proceedings.esri.com/library/userconf/geodesign17/index.html">2017 Conference</a></span>
@@ -135,16 +198,17 @@
   <style>.embed-container {position: relative; height: 1550px; padding-bottom:80%; max-width: 100%;} .embed-container iframe, .embed-container object, .embed-container iframe{position: absolute; top: 0; left: 0; width: 100%; height: 1550px;} small{position: absolute; z-index: 40; bottom: 0; margin-bottom: -15px;}</style><div class="embed-container"><iframe name="survey123webform" width="500" height="400" frameborder="0" marginheight="0" marginwidth="0" title="GeoDesign Rule Submission" src="//survey123.arcgis.com/share/b070027757cd4ebfa7f0fd2df386b44c?hide=navbar,header,footer,theme,description" allow="geolocation https://survey123.arcgis.com; camera https://survey123.arcgis.com"></iframe></div><script>var survey123webform = document.getElementsByName('survey123webform')[0];window.addEventListener("message",e=>{if(e.data){var t=JSON.parse(e.data);"survey123:onFormLoaded"===t.event&&t.contentHeight&&(survey123webform.parentNode.style.height=t.contentHeight+"px")&&(survey123webform.parentNode.style["padding-bottom"]="unset")}});</script>  </section>
 
     {% include footer.html %}
+  
+  <script>
+    var licenses = { {% for item in site.licenses %}"{{item.license}}":
+      "{{item.attr.first}}",{% endfor %}
+    };
+    var sources = { {% for item in site.sources %}
+      "{{item.source}}": [{% for entry in item.attr %}"{{entry}}",
+      {% endfor %} ],
+      {% endfor %}
+    };
+  </script> 
   <script src="js/main.js"></script>
-  <script type="text/javascript">
-   $(document).ready(function(){
-    $('.demoLink').each(function(){ 
-      var ruleName = $(this).attr('href');
-      var href = window.location.origin + window.location.pathname;
-      var url = "https://www.arcgis.com/apps/CEWebViewer/viewer.html?3dWebScene=" + href + "RuleRepository/models/" + ruleName + ".3ws"
-      $(this).attr('href', url);
-    }); 
-  });
-  </script>
   </body>
 </html>
