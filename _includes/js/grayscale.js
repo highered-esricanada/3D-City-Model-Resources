@@ -236,7 +236,7 @@ $(document).ready(function(){
             }
 
             var ormUrl = root + "/" + parts[0] + "/"  + parts[1] + "/"  + parts[3] + "/" + parts[3] +  "_orm.png";
-            downloadLinks.push(bUrl);
+            downloadLinks.push(ormUrl);
             mat.metallicTexture = new BABYLON.Texture(ormUrl, scene);
             
             var textures = [mat.diffuseTexture, mat.bumpTexture,  mat.specularTexture, mat.metallicTexture, mat.albedoTexture];
