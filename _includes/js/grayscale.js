@@ -84,7 +84,7 @@ $(document).ready(function(){
     $('.demoLink').each(function(){ 
       var ruleName = $(this).attr('href');
       var href = window.location.origin + window.location.pathname;
-      var url = "https://www.arcgis.com/apps/CEWebViewer/viewer.html?3dWebScene=" + href + "RuleRepository/models/" + ruleName + ".3ws"
+      var url = "webviewer/viewer.html?3dWebScene=" + href + "RuleRepository/models/" + ruleName + ".3ws"
       $(this).attr('href', url);
     }); 
 
