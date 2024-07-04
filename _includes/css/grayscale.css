@@ -641,6 +641,8 @@ body {
 .rulePreview {
     width:220px;
     padding-right: 15px;
+    margin:0 .5em .25em 0; 
+    float: left;
 }
 
 .gallery-image-a {
@@ -793,3 +795,60 @@ body {
     -webkit-box-shadow: 2px 2px 2px 1px #AAA; 
     box-shadow: 2px 2px 2px 1px #AAA;
   }
+
+  #topContainer{
+    padding-top: .5em; 
+    margin-top: 1em; 
+    padding-right:0; 
+    padding-left:15px
+    }
+    
+    #headerImg{
+        width: 350px; 
+        max-width: 100%; 
+        padding-right: 20px;
+    }
+    
+    #submitItem{
+        font-weight:900;
+    }
+    
+    #description{
+        margin-top: 6px;
+        font-size: 22px;
+    }
+    
+    #textureFilter{
+        margin-bottom: 6px;
+    }
+    
+    .embed-container {
+        position: relative; 
+        height: 1550px; 
+        padding-bottom:80%; 
+        max-width: 100%;
+    } 
+
+    .embed-container iframe, .embed-container object, .embed-container iframe{
+        position: absolute; 
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 1550px;
+    } 
+
+    small{
+        position: absolute;
+        z-index: 40; 
+        bottom: 0; 
+        margin-bottom: -15px;
+    }
+
+    .buttonContainer{
+        padding-left:19px; 
+        float:left;
+    }
+
+    .linkButton{
+        height: 30px;
+    }

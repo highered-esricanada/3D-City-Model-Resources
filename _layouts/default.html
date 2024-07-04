@@ -1,4 +1,5 @@
-<html> 
+<!DOCTYPE html>
+<html lang="en"> 
   {% include head.html %}
   <script type="module" src="js/model-viewer.min.js"></script>
   <script src="js/babylon.js"></script>
@@ -8,38 +9,39 @@
   <script src="js/FileSaver.min.js"></script>
   <script src="js/jszip-utils.js"></script>
   <body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
+    <link rel="preload" fetchpriority="high" as="image" href="/img/intro-bg.png" type="image/png">
     {% include nav.html %}
     {% include header.html %}
-    <p class="container" style="margin-top: 6px; font-size: 22px;">Find and preview free rule packages, tutorials, and resources for 3D GIS and CityEngine projects.</p>
+    <p class="container" id="description">Find and preview free rule packages, tutorials, and resources for 3D GIS and CityEngine projects.</p>
     <section id="links" class="container">
       <h2 id="collection">CGA Rules</h2><hr class="title"> {% assign rules = site.rules | where:"category", "rule"  %}{% assign categories = site.category_order %} {% for category in site.category_order %}
       <br/><a data-toggle="collapse" data-target="#{{ category }}Section"><img class="chevron" src="img/expand_collapse.svg"/><h3 id = "{{ category }}">{{ category }}</h3></a><br/>
       <div class="collapsed collapse in" id="{{ category }}Section"> {% assign rules = site.rules | where:"category", "rule" | where:"Type", category %} {% for rule in rules %}  
           <div class="row content">         
-            <div class="col-3"><img src="RuleRepository/images/{{ rule.Name }}.png" style="margin:0 .5em .25em 0; float: left;" class="rulePreview"></div>
+            <div class="col-3"><img src="RuleRepository/images/{{ rule.Name }}.png" class="rulePreview"></div>
             <div class="col-sm-8">
               <h4 class = "ruleName">{{ rule.Alias }} </h4><i class="attribution"> {{ rule.Attribution }}</i>
               <span class="ruleDescription">{{ rule.Description }}</span>
             </div>
-            <div class="col-3"  style="padding-left:19px; float:left">
-                  <div class="row" style="height: 30px;">
+            <div class="col-3 buttonContainer">
+                  <div class="row linkButton">
                   {%- if rule.RPK != "Y" -%}
                   <a href="{{ rule.RPK }}" target="_blank"><img class="icon" src="img/download.svg"/><span class="linkText">Download</span></a>
                   {%- else -%}
                   <img class="icon fade" src="img/download.svg"/><span class="linkText inactive">Download</span>
                   {%- endif -%}
                   </div>
-                  <div class="row" style="height: 30px;">
+                  <div class="row linkButton">
                   {%- if rule.Code != "N" -%}
                   <a href="rules/{{ rule.Name }}/index.html" target="_blank"><img class="icon" src="img/code.svg"/><span class="linkText">View Code</span></a>
                   {%- else -%}
                   <img class="icon fade" src="img/code.svg"/><span class="linkText inactive">View Code</span>
                   {%- endif -%}
                 </div>
-                <div class="row" style="height: 30px;">
+                <div class="row linkButton">
                   <a href="{{ rule.Name}}" class="demoLink" target="_blank"><img class="icon" src="img/demo.svg"/><span class="linkText">Demo</span></a>
                 </div>
-                <div class="row" style="height: 30px;">
+                <div class="row linkButton">
                 {%- if rule.Video != "N" -%}
                 <a href="{{ rule.Video }}" target="_blank"><img class="icon" src="img/video.svg"/><span class="linkText">Video</span></a>
                 {%- else -%}
@@ -79,9 +81,11 @@
             <li data-filter=".Recreation">Recreation</li>
             <li data-filter=".Infrastructure">Infrastructure</li>
             <li data-filter=".Traffic">Traffic</li>
+            <li data-filter=".Vehicles">Vehicles</li>
+            <li data-filter=".Nature">Nature</li>
           </ul>
         </div>
-        <div class="filters" style="margin-bottom: 6px;">
+        <div class="filters" id="textureFilter">
           <hr>
           <div class="categoryLabel">
             Textures:
@@ -137,6 +141,12 @@
   <h2 id="tutorials">Tutorials</h2><hr class="title">
 	<div class="link_list">
 		<h3 class="subResource">CityEngine</h3>
+    <span><a target="_blank" href="https://www.youtube.com/watch?v=kWEKd-jLTMY&ab_channel=EsriCanadaGISCentresofExcellence">Landscape Modelling in CityEngine Part 1</a></span>
+    <span><a target="_blank" href="https://www.youtube.com/watch?v=4w9-WekefJg&t=1094s&ab_channel=EsriCanadaGISCentresofExcellence">Landscape Modelling in CityEngine Part 2</a></span>
+    <span><a target="_blank" href="https://www.youtube.com/watch?v=GKiFg57QCnw&ab_channel=EsriCanadaGISCentresofExcellence">3D Urban Modelling With CityEngine - 2024</a></span>
+    <span><a target="_blank" href="https://www.youtube.com/watch?v=mquHXoqUVyw&t=2s&ab_channel=EsriCanadaGISCentresofExcellence">Working with InfraWorks Data in CityEngine</a></span>
+    <span><a target="_blank" href="https://www.youtube.com/watch?v=AGItVOiFkcM&t=489s&ab_channel=EsriCanadaGISCentresofExcellence">3D Modelling with Grasshopper and CityEngine</a></span>
+    <span><a target="_blank" href="https://www.esri.com/arcgis-blog/products/city-engine/design-planning/urban-design-viz-with-cityengine-and-twinmotion">Urban Design Visualization with ArcGIS CityEngine and Twinmotion</a></span>
 		<span><a target="_blank" href="https://hed.esri.ca/resourcefinder/#/title=3D%20Multipatch%20Creation%20and%20Editing%20in%20CityEngine%20and%20ArcGIS%20Pro/lang=en">3D Multipatch Creation and Editing in CityEngine and ArcGIS Pro</a></span>
 		<span><a target="_blank" href="http://desktop.arcgis.com/en/cityengine/latest/tutorials/introduction-to-the-cityengine-tutorials.htm">CityEngine Tutorials</a></span>
 		<span><a target="_blank" href="https://www.esri.com/arcgis-blog/products/city-engine/3d-gis/how-to-exchange-data-between-esri-cityengine-and-autodesk-infraworks/">Exchanging Data Between Infraworks and CityEngine</a></span>
@@ -187,6 +197,8 @@
 		<span><a target="_blank" href="https://www.knoll.com/Typicals/search?change=true&page=1&size=25">Office Furniture</a></span>
 		<span><a target="_blank" href="https://www.turbosquid.com/Search/Index.cfm?max_price=0&min_price=0&cname=free">Free 3D Objects</a></span>
     <h3 class="subResource">Esri GeoDesign Summit Proceedings</h3>
+    <span><a target="_blank" href="https://registration.esri.com/flow/esri/23geosummit/geodesign-2023-ps/page/proceedings">2023 Conference</a></span>
+    <span><a target="_blank" href="https://proceedings.esri.com/library/userconf/geodesign22/index.html">2022 Conference</a></span>
     <span><a target="_blank" href="https://proceedings.esri.com/library/userconf/geodesign21/index.html">2021 Conference</a></span>
     <span><a target="_blank" href="https://proceedings.esri.com/library/userconf/geodesign20/index.html">2020 Conference</a></span>
 		<span><a target="_blank" href="http://proceedings.esri.com/library/userconf/geodesign19/index.html">2019 Conference</a></span>
@@ -195,7 +207,7 @@
   </div>
   <h2 id="submit">Submit Rule</h2><hr class="title">
   <p>Do you have a useful or fun rule to add to the site? To submit a rule, export the rule package from CityEngine, share it on ArcGIS Online, and provide the rule details in the form below. </p>
-  <style>.embed-container {position: relative; height: 1550px; padding-bottom:80%; max-width: 100%;} .embed-container iframe, .embed-container object, .embed-container iframe{position: absolute; top: 0; left: 0; width: 100%; height: 1550px;} small{position: absolute; z-index: 40; bottom: 0; margin-bottom: -15px;}</style><div class="embed-container"><iframe name="survey123webform" width="500" height="400" frameborder="0" marginheight="0" marginwidth="0" title="GeoDesign Rule Submission" src="//survey123.arcgis.com/share/b070027757cd4ebfa7f0fd2df386b44c?hide=navbar,header,footer,theme,description" allow="geolocation https://survey123.arcgis.com; camera https://survey123.arcgis.com"></iframe></div><script>var survey123webform = document.getElementsByName('survey123webform')[0];window.addEventListener("message",e=>{if(e.data){var t=JSON.parse(e.data);"survey123:onFormLoaded"===t.event&&t.contentHeight&&(survey123webform.parentNode.style.height=t.contentHeight+"px")&&(survey123webform.parentNode.style["padding-bottom"]="unset")}});</script>  </section>
+  <div class="embed-container"><iframe name="survey123webform" width="500" height="400" frameborder="0" marginheight="0" marginwidth="0" title="GeoDesign Rule Submission" src="https://survey123.arcgis.com/share/b070027757cd4ebfa7f0fd2df386b44c?hide=navbar,header,footer,theme,description" allow="geolocation https://survey123.arcgis.com; camera https://survey123.arcgis.com"></iframe></div><script>var survey123webform = document.getElementsByName('survey123webform')[0];window.addEventListener("message",e=>{if(e.data){var t=JSON.parse(e.data);"survey123:onFormLoaded"===t.event&&t.contentHeight&&(survey123webform.parentNode.style.height=t.contentHeight+"px")&&(survey123webform.parentNode.style["padding-bottom"]="unset")}});</script>  </section>
 
     {% include footer.html %}
   

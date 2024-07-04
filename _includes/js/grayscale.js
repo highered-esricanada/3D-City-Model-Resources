@@ -103,7 +103,7 @@ $(document).ready(function(){
 
     function splitModels(url){
         var parts = url.split(" - ");
-        var author = "CARLA";
+        var author = parts[0].split("/")[3];
         var category = parts[1];
         var name = parts[2].split(".")[0];
         return([author, category, name]);
