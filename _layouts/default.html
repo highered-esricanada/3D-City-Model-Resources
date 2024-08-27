@@ -126,7 +126,7 @@
               <div class="col-md-1 grid-item {{ a[1] }} model" data-category="{{ a[1] }}">
                   <img src="RuleRepository/images/StaticModels/{{ model }}.png" loading="lazy" class="gallery-image-a"></img>
               </div>  {% endfor %}{% for material in site.materials %}{% assign b = material | split: " - " %}
-              <div class="col-md-1 grid-item material {{ b[1] }}" data-category="{{ b[1] }}"  >
+              <div class="col-md-1 grid-item {{ b[1] | capitalize }} material" data-category="{{ b[1]}}"  >
                 <div class="badge-container">{% if b[4] == "1" %} 
                   <span class="indicator" data-tooltip="Includes Specular Map">S</span>{% endif %}{% if b[3] == "1" %}
                   <span class="indicator" data-tooltip="Includes Normal Map">B</span>{% endif %}{% if b[5] == "1"%}  
