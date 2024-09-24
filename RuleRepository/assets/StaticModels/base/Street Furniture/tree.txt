@@ -1,0 +1,67 @@
+ Volume in drive D is Data
+ Volume Serial Number is 6A6C-6F9B
+
+ Directory of D:\Code\3D-City-Model-Resources\RuleRepository\assets\StaticModels\base\Street Furniture
+
+06/03/2024  03:16 PM    <DIR>          .
+06/03/2024  03:16 PM    <DIR>          ..
+04/01/2024  05:44 PM            10,344 church_01.glb
+04/01/2024  05:09 PM            49,584 cigarette_bin.glb
+04/01/2024  05:09 PM            35,128 colorado_barrier.glb
+04/01/2024  05:09 PM            31,284 crowd_control_barrier.glb
+04/01/2024  05:34 PM            21,192 curved_stone_bench.glb
+04/01/2024  05:08 PM             6,216 cycle_mid_stand.glb
+04/01/2024  05:08 PM            25,216 cycle_rack.glb
+04/01/2024  05:08 PM             9,516 cycle_stand.glb
+04/01/2024  05:34 PM            70,436 deck_chair.glb
+04/01/2024  05:09 PM            11,416 estate_sign_01.glb
+04/01/2024  05:09 PM             8,636 estate_sign_02.glb
+04/01/2024  05:09 PM             3,208 estate_sign_03.glb
+04/01/2024  05:34 PM            42,568 garden_bench_01.glb
+04/01/2024  05:32 PM            39,268 garden_bridge_01.glb
+04/01/2024  05:32 PM            41,152 garden_obelisk_01.glb
+04/01/2024  05:32 PM            30,984 garden_obelisk_02.glb
+04/01/2024  05:09 PM            33,016 heritage_bird_bath.glb
+04/01/2024  05:32 PM            58,128 japanese_stone_lantern_01.glb
+04/01/2024  05:32 PM            62,420 japanese_stone_lantern_02.glb
+04/01/2024  05:26 PM           138,148 lamp_post_01.glb
+04/01/2024  05:34 PM           100,840 lutyens_bench.glb
+04/01/2024  05:09 PM             7,504 menu_stand.glb
+04/01/2024  05:30 PM            98,696 oil_barrel.glb
+04/01/2024  05:34 PM            81,804 ornate_bench.glb
+04/01/2024  05:09 PM            32,872 outdoor_bin.glb
+04/01/2024  05:09 PM            25,872 outdoor_donation_box.glb
+04/01/2024  05:34 PM            31,188 outdoor_folding_chair.glb
+04/01/2024  05:34 PM            68,980 park_bench.glb
+04/01/2024  05:09 PM            24,344 pedestrian_guardrail.glb
+04/01/2024  05:34 PM            35,824 picnic_table_01.glb
+04/01/2024  05:21 PM            41,356 rock_01.glb
+04/01/2024  05:21 PM            57,144 rock_02.glb
+04/01/2024  05:21 PM            41,044 rock_03.glb
+04/01/2024  05:21 PM            46,020 rock_04.glb
+04/01/2024  05:32 PM           113,688 rose_arch.glb
+04/01/2024  05:09 PM            24,604 rounded_picket_fence.glb
+04/01/2024  05:09 PM            55,872 standing_floor_chalkboard_01.glb
+04/01/2024  05:09 PM            45,928 standing_floor_chalkboard_02.glb
+04/01/2024  05:32 PM            63,376 sundial.glb
+04/01/2024  05:32 PM           153,092 tiered_fountain_01.glb
+06/03/2024  03:16 PM                28 tree.txt
+04/01/2024  05:32 PM           100,608 trellis_cubed.glb
+04/01/2024  05:32 PM            36,116 trellis_curved.glb
+04/01/2024  05:32 PM            11,920 trellis_fan.glb
+04/01/2024  05:32 PM            17,812 trellis_square.glb
+04/01/2024  05:09 PM            29,812 trench_drainage_grate.glb
+04/01/2024  05:09 PM            34,664 walking_trail_bench.glb
+04/01/2024  05:09 PM            12,180 walking_trail_fence.glb
+04/01/2024  05:09 PM            31,016 water_filled_barrier_01.glb
+04/01/2024  05:09 PM            38,236 well.glb
+04/07/2024  01:44 PM            13,148 wooden_barrier_01.glb
+04/07/2024  01:44 PM            22,888 wooden_barrier_02.glb
+05/02/2024  04:55 PM            14,856 wooden_barrier_03.glb
+04/01/2024  05:09 PM            15,988 wooden_gate_01.glb
+04/01/2024  05:09 PM            25,896 wooden_rope_barrier.glb
+04/01/2024  05:32 PM            34,496 wooden_rose_arch.glb
+04/01/2024  05:14 PM            93,772 wood_barrel.glb
+04/01/2024  05:47 PM            28,056 wood_wall_panel.glb
+              58 File(s)      2,439,400 bytes
+               2 Dir(s)  56,257,765,376 bytes free

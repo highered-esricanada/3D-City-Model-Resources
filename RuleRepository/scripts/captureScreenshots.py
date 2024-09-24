@@ -32,6 +32,7 @@ def createScreenshots():
         ce.waitForUIIdle()
         views[0].snapshot(ce.toFSPath('images')+ "\\StaticModels\\"  + str(layer) + ".png", 100, 100)
         ce.setLayerPreferences(layer, "Visible", False)
+    printModels()
         
 
 def printImages():
@@ -61,9 +62,26 @@ def printImages():
                 if os.path.exists(ormName):
                     orm = 1
                     
+                    
+    
     
                 print("  - \"" + author + " - " + category + " - " + orginalFilename +  " - "  + str(bump) + " - " + str(spec) + " - " + str(orm) + "\"")
-                
 
 
-printImages()    
+def printModels():
+    rootPath = "assets/StaticModels/"
+    mypath = ce.toFSPath(rootPath)
+    authors = os.listdir(mypath)
+    for author in authors:
+        categories = os.listdir(ce.toFSPath(rootPath + author))
+        for category in categories:
+            path = ce.toFSPath(rootPath + author + "/" + category )
+            files = glob.glob(path + "\\*.glb")
+            for file in files:
+                filename = os.path.splitext(os.path.basename(file))[0]
+                print("  - \"" + author + " - " + category + " - " + filename  + "\"")
+
+ 
+createScreenshots()
+#printModels()
+#printImages()    

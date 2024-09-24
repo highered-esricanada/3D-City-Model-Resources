@@ -32,7 +32,7 @@ i = 0
 offsetSize = 30
 
 authors = os.listdir(mypath)
-
+print(authors)
 for author in authors:
     mypath = ce.toFSPath(rootPath + author)
     files = get_all_filepaths(mypath)
@@ -41,8 +41,8 @@ for author in authors:
         category = os.path.basename(os.path.dirname(file))
         name = os.path.basename(file).split(".")[0]
         offset =[(i%width)*offsetSize,0,(i/width)*offsetSize]
-        path = "/ResourceLibrary/" + rootPath + "/" + author + "/" + category + "/"  + name + ".glb"
-        print ("creating " + path + " at " + str(offset[0]) +" " + str(offset[2]) )
+        path = "/ResourceLibrary/" + rootPath +  author + "/" + category + "/" +  name + ".glb"
+        print("creating " + path + " at " + str(offset[0]) +" " + str(offset[2]) )
         layer = ce.addStaticModelLayer(author + " - " + category + " - " + name)
         staticModel = ce.createStaticModel(layer, offset, path)
         i+= 1

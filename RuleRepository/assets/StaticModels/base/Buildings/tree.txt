@@ -1,0 +1,46 @@
+ Volume in drive D is Data
+ Volume Serial Number is 6A6C-6F9B
+
+ Directory of D:\Code\3D-City-Model-Resources\RuleRepository\assets\StaticModels\base\Buildings
+
+06/03/2024  03:14 PM    <DIR>          .
+06/03/2024  03:14 PM    <DIR>          ..
+04/01/2024  05:44 PM             3,052 building_commercial_01.glb
+04/01/2024  05:44 PM             3,744 building_commercial_02.glb
+04/01/2024  05:44 PM             3,316 building_commercial_03.glb
+04/01/2024  05:44 PM             6,640 building_commercial_04.glb
+04/01/2024  05:44 PM             3,284 building_commercial_05.glb
+04/01/2024  05:44 PM             7,332 building_industrial_01.glb
+04/01/2024  05:44 PM             2,588 building_industrial_02.glb
+04/01/2024  05:44 PM             2,924 building_industrial_03.glb
+04/01/2024  05:44 PM             6,164 building_industrial_04.glb
+04/01/2024  05:44 PM             2,296 building_industrial_05.glb
+04/01/2024  05:44 PM            13,544 building_industrial_06.glb
+04/01/2024  05:44 PM             2,968 building_industrial_07.glb
+04/01/2024  05:44 PM             2,356 building_industrial_08.glb
+04/01/2024  05:44 PM             6,564 building_industrial_09.glb
+04/01/2024  05:44 PM             4,488 building_industrial_10.glb
+04/01/2024  05:44 PM             1,996 building_industrial_11.glb
+04/01/2024  05:44 PM             2,052 building_residential_01.glb
+04/01/2024  05:44 PM             2,032 building_residential_02.glb
+04/01/2024  05:44 PM             3,032 building_residential_03.glb
+04/01/2024  05:44 PM             2,612 building_residential_04.glb
+04/01/2024  05:44 PM             2,360 building_residential_05.glb
+04/01/2024  05:44 PM             3,752 building_residential_06.glb
+04/01/2024  05:44 PM             2,564 building_residential_07.glb
+04/01/2024  05:44 PM             2,000 building_residential_08.glb
+04/01/2024  05:44 PM             2,048 building_residential_09.glb
+04/01/2024  05:44 PM             2,904 building_residential_10.glb
+04/01/2024  05:44 PM             3,704 building_residential_11.glb
+04/01/2024  05:44 PM             5,864 building_residential_12.glb
+04/01/2024  05:44 PM             6,272 building_residential_13.glb
+04/01/2024  05:44 PM             2,020 building_residential_14.glb
+04/01/2024  05:44 PM             3,236 building_residential_15.glb
+04/01/2024  05:44 PM             5,280 building_tower_01.glb
+04/01/2024  05:44 PM             6,048 building_tower_02.glb
+04/01/2024  05:44 PM             3,216 building_tower_03.glb
+04/01/2024  05:44 PM             7,260 building_tower_04.glb
+04/01/2024  05:44 PM            26,640 cooling_tower.glb
+06/03/2024  03:14 PM                64 tree.txt
+              37 File(s)        168,216 bytes
+               2 Dir(s)  56,257,773,568 bytes free
